@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotería del Abuelo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style id="app-style">
+:root{
+  --bg:#eef1ea;
+  --surface:#ffffff;
+  --surface-2:#e2e7d9;
+  --ink:#1e2b25;
+  --ink-soft:#5b6a60;
+  --border:#d3d9c6;
+  --accent:#a06a24;
+  --accent-ink:#7a4f18;
+  --accent-soft:#f0e2c8;
+  --good:#3c7a4d;
+  --good-soft:#dcefe0;
+  --warn:#a4402c;
+  --warn-soft:#f7ded7;
+  --shadow: 0 1px 2px rgba(30,43,37,.06), 0 6px 20px -8px rgba(30,43,37,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151b17; --surface:#1d2620; --surface-2:#242f27;
+    --ink:#eef1ea; --ink-soft:#a3ada2; --border:#374238;
+    --accent:#d9a75a; --accent-ink:#f2cd94; --accent-soft:#3a3120;
+    --good:#7fc98f; --good-soft:#1e3226;
+    --warn:#e08b78; --warn-soft:#3a231e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151b17; --surface:#1d2620; --surface-2:#242f27;
+  --ink:#eef1ea; --ink-soft:#a3ada2; --border:#374238;
+  --accent:#d9a75a; --accent-ink:#f2cd94; --accent-soft:#3a3120;
+  --good:#7fc98f; --good-soft:#1e3226;
+  --warn:#e08b78; --warn-soft:#3a231e;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;padding:2.5rem 1.25rem 5rem;}
+h1,h2,h3{font-family:'Source Serif 4', Georgia, serif; text-wrap:balance; margin:0;}
+.eyebrow{
+  font-family:'IBM Plex Sans',sans-serif; text-transform:uppercase;
+  letter-spacing:.11em; font-size:.72rem; font-weight:600;
+  color:var(--accent-ink); margin:0 0 .5rem;
+}
+header.top{margin-bottom:2rem;}
+header.top h1{font-size:2.05rem;font-weight:700;}
+header.top p{color:var(--ink-soft);max-width:62ch;margin:.6rem 0 0;font-size:.98rem;}
+.mono{font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums;}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;}
+.stats > .stat-card{min-width:0;}
+@media (max-width:560px){.stats{grid-template-columns:1fr;}}
+.stat-card{
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:1.25rem 1.35rem; box-shadow:var(--shadow);
+}
+.stat-card .who{font-size:.82rem;color:var(--ink-soft);font-weight:500;margin-bottom:.35rem;}
+.stat-card .amount{font-size:2rem;font-weight:600;letter-spacing:-.01em;}
+.stat-card .sub{font-size:.78rem;color:var(--ink-soft);margin-top:.45rem;}
+.pill{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.74rem;font-weight:600;letter-spacing:.02em;
+  padding:.22rem .6rem;border-radius:99px;margin-top:.5rem;
+}
+.pill.warn{background:var(--warn-soft);color:var(--warn);}
+.pill.good{background:var(--good-soft);color:var(--good);}
+
+.panel{
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:1.35rem 1.4rem 1.5rem;
+  box-shadow:var(--shadow); margin-bottom:1.5rem;
+}
+.panel h2{font-size:1.15rem;font-weight:700;}
+.panel .hint{color:var(--ink-soft);font-size:.85rem;margin:.2rem 0 1rem;max-width:62ch;}
+
+/* ---- pendientes ---- */
+.panel.pend{border-color:var(--accent);}
+.pend-head{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;}
+.badge{
+  background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;
+  padding:.12rem .5rem;border-radius:99px;
+}
+.pend-list{display:flex;flex-direction:column;gap:.45rem;}
+.pend-row{
+  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+  border:1px solid var(--border);border-radius:10px;
+  padding:.55rem .75rem;background:var(--surface-2);
+}
+.pend-row.due{border-color:var(--accent);background:var(--accent-soft);}
+.pend-date{font-weight:600;font-size:.9rem;min-width:8.5rem;}
+.pend-precio{
+  font-family:'IBM Plex Mono',monospace;font-size:.85rem;
+  color:var(--ink-soft);flex:1;min-width:13rem;
+  display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+}
+.pend-precio input{
+  font:inherit;font-family:'IBM Plex Mono',monospace;font-size:.85rem;
+  width:5rem;text-align:right;padding:.25rem .45rem;
+  border:1px solid var(--border);border-radius:7px;
+  background:var(--surface);color:var(--ink);
+}
+.pend-precio input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.pend-split{white-space:nowrap;}
+.pend-tag{
+  font-family:'IBM Plex Sans',sans-serif;font-size:.68rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.05em;
+  background:var(--surface);border:1px solid var(--border);color:var(--ink-soft);
+  padding:.1rem .4rem;border-radius:99px;
+}
+.pend-actions{display:flex;gap:.4rem;margin-left:auto;}
+.btn-sm{
+  font:inherit;font-size:.8rem;font-weight:600;
+  background:var(--accent);color:#fff;border:none;border-radius:8px;
+  padding:.35rem .8rem;cursor:pointer;
+}
+.btn-sm:hover{filter:brightness(1.07);}
+.btn-sm.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--border);}
+.btn-sm.ghost:hover{filter:none;border-color:var(--accent);color:var(--ink);}
+.pend-more{margin-top:.7rem;font-size:.82rem;color:var(--ink-soft);}
+.linkish{background:none;border:none;color:var(--accent-ink);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.tab{
+  font:inherit;font-size:.85rem;font-weight:600;
+  border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);
+  padding:.45rem .95rem;border-radius:99px;cursor:pointer;
+}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+form.entry-form{display:flex;flex-direction:column;gap:.7rem;max-width:520px;}
+.field{display:flex;flex-direction:column;gap:.3rem;min-width:0;}
+.field label{font-size:.78rem;font-weight:600;color:var(--ink-soft);}
+.field input, .field select{
+  font:inherit;font-family:'IBM Plex Sans',sans-serif;
+  padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--ink);width:100%;min-width:0;
+}
+.field input:focus, .field select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+.row2 > .field{min-width:0;}
+@media (max-width:520px){.row2{grid-template-columns:1fr;}}
+.quickrow{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:-.15rem;}
+.chip{
+  font-family:'IBM Plex Mono',monospace;font-size:.78rem;
+  border:1px solid var(--border);background:var(--surface-2);color:var(--ink);
+  padding:.28rem .6rem;border-radius:99px;cursor:pointer;
+}
+.chip:hover{border-color:var(--accent);}
+.btn{
+  margin-top:.3rem;font:inherit;font-weight:600;font-size:.88rem;
+  background:var(--accent);color:#fff;border:none;border-radius:9px;
+  padding:.6rem 1rem;cursor:pointer;
+}
+.btn:hover{filter:brightness(1.06);}
+.btn.secondary{background:transparent;color:var(--ink-soft);border:1px solid var(--border);}
+.editnote{font-size:.78rem;color:var(--accent-ink);background:var(--accent-soft);padding:.4rem .6rem;border-radius:8px;}
+
+/* ---- premio: numeros ---- */
+.nums{display:flex;flex-direction:column;gap:.5rem;}
+.num-row{
+  display:grid;grid-template-columns:1fr 8.5rem;gap:.6rem;align-items:center;
+  border:1px solid var(--border);border-radius:10px;padding:.5rem .7rem;
+}
+.num-row.on{border-color:var(--accent);background:var(--accent-soft);}
+.num-id{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.95rem;}
+.num-meta{font-size:.74rem;color:var(--ink-soft);}
+.num-row input{
+  font:inherit;font-family:'IBM Plex Mono',monospace;
+  padding:.4rem .55rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--ink);width:100%;min-width:0;text-align:right;
+}
+.num-row input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.preview{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:.65rem .8rem;font-size:.86rem;
+}
+.preview .pv-line{display:flex;justify-content:space-between;gap:1rem;}
+.preview .pv-line + .pv-line{margin-top:.25rem;}
+.preview .pv-val{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600;}
+.preview .pv-none{color:var(--ink-soft);font-style:italic;}
+
+/* ---- barra de dónde se guarda ---- */
+#modo-aviso{
+  position:sticky;top:0;z-index:50;
+  padding:.6rem 1.1rem;font-size:.85rem;line-height:1.4;
+  display:flex;gap:.6rem;align-items:flex-start;flex-wrap:wrap;
+}
+#modo-aviso strong{font-weight:700;}
+#modo-aviso .ca-txt{flex:1;min-width:14rem;}
+#modo-aviso.malo{background:var(--warn);color:#fff;}
+#modo-aviso.local{background:var(--accent-soft);color:var(--accent-ink);border-bottom:1px solid var(--accent);}
+
+/* ---- deshacer ---- */
+.undo-bar{
+  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+  background:var(--accent-soft);border:1px solid var(--accent);
+  border-radius:12px;padding:.6rem .9rem;margin-bottom:1.5rem;
+  font-size:.86rem;color:var(--accent-ink);
+}
+.undo-bar .undo-txt{flex:1;min-width:12rem;}
+
+/* ---- cuenta con la lotería ---- */
+.panel.lot{border-color:var(--good);}
+.lot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.1rem;}
+.lot-grid > div{min-width:0;}
+@media (max-width:620px){.lot-grid{grid-template-columns:1fr;}}
+.lot-tile{border:1px solid var(--border);border-radius:11px;padding:.85rem 1rem;background:var(--surface-2);}
+.lot-tile.deuda{background:var(--warn-soft);border-color:var(--warn);}
+.lot-tile.aldia{background:var(--good-soft);border-color:var(--good);}
+.lot-tile .lbl{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+.lot-tile .val{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:1.35rem;font-weight:600;margin-top:.2rem;}
+.lot-tile .foot{font-size:.75rem;color:var(--ink-soft);margin-top:.15rem;}
+.meses{overflow-x:auto;}
+.meses table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:560px;}
+.meses th{text-align:right;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-soft);font-weight:600;padding:.45rem .6rem;background:var(--surface-2);}
+.meses th:first-child{text-align:left;}
+.meses td{padding:.45rem .6rem;border-top:1px solid var(--border);text-align:right;
+  font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.meses td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;font-weight:600;}
+.meses td:last-child{text-align:left;}
+.meses tr.debe{background:var(--warn-soft);}
+.meses tr.debe td{color:var(--warn);}
+.meses tr.pagado td:first-child{font-weight:500;color:var(--ink-soft);}
+.mes-btn{
+  font:inherit;font-size:.75rem;font-weight:600;border-radius:99px;cursor:pointer;
+  padding:.2rem .65rem;border:1px solid var(--border);
+}
+.mes-btn.debe{background:var(--warn);color:#fff;border-color:var(--warn);}
+.mes-btn.ok{background:transparent;color:var(--good);border-color:var(--good);}
+.mes-bulk{
+  background:none;border:none;color:var(--accent-ink);font:inherit;font-size:.72rem;
+  cursor:pointer;text-decoration:underline;padding:0;margin-left:.5rem;
+}
+.aprox{color:var(--warn);cursor:help;font-weight:700;}
+
+/* ---- jugado vs recuperado ---- */
+.bal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.1rem;}
+.bal-grid > div{min-width:0;}
+@media (max-width:620px){.bal-grid{grid-template-columns:1fr;}}
+.bal-tile{
+  border:1px solid var(--border);border-radius:11px;padding:.85rem 1rem;background:var(--surface-2);
+}
+.bal-tile .lbl{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+.bal-tile .val{
+  font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;
+  font-size:1.35rem;font-weight:600;margin-top:.2rem;
+}
+.bal-tile .foot{font-size:.75rem;color:var(--ink-soft);margin-top:.15rem;}
+.bal-tile.sal{background:var(--accent-soft);border-color:var(--accent);}
+.desglose{overflow-x:auto;}
+.desglose table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:440px;}
+.desglose th{
+  text-align:right;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-soft);font-weight:600;padding:.4rem .6rem;
+}
+.desglose th:first-child{text-align:left;}
+.desglose td{padding:.42rem .6rem;border-top:1px solid var(--border);text-align:right;
+  font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+.desglose td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+.desglose tr.dudosa td{color:var(--warn);}
+.desglose .cnt{font-size:.75rem;color:var(--ink-soft);}
+.aviso{
+  font-size:.8rem;color:var(--warn);background:var(--warn-soft);
+  border-radius:9px;padding:.5rem .7rem;margin-top:.9rem;
+}
+
+/* ---- descargas ---- */
+#export-box{
+  margin-top:.9rem;border:1px solid var(--accent);border-radius:11px;
+  padding:.8rem .9rem;background:var(--accent-soft);
+}
+#export-box p{margin:0 0 .55rem;font-size:.84rem;color:var(--accent-ink);}
+#export-box textarea{
+  width:100%;min-height:8rem;resize:vertical;
+  font-family:'IBM Plex Mono',monospace;font-size:.72rem;line-height:1.35;
+  padding:.5rem .6rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--ink);
+}
+#export-box .exp-acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.55rem;}
+.dl-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+.dl-status{font-size:.82rem;color:var(--ink-soft);margin-top:.7rem;min-height:1.2em;}
+.dl-status.ok{color:var(--good);}
+.dl-status.err{color:var(--warn);}
+
+/* ---- resumen anual ---- */
+.years{overflow-x:auto;}
+.years table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:420px;}
+.years th{
+  text-align:right;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-soft);font-weight:600;padding:.4rem .6rem;
+}
+.years th:first-child{text-align:left;}
+.years td{padding:.42rem .6rem;border-top:1px solid var(--border);text-align:right;
+  font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+.years td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;font-weight:600;}
+
+/* ---- historial ---- */
+.filters{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.9rem;}
+.filters .grp{display:flex;gap:.35rem;flex-wrap:wrap;}
+.filter-chip{
+  font-size:.78rem;font-weight:500;
+  border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);
+  padding:.28rem .65rem;border-radius:99px;cursor:pointer;
+}
+.filter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+table.hist{width:100%;border-collapse:collapse;font-size:.88rem;min-width:600px;}
+table.hist thead th{
+  text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-soft);font-weight:600;padding:.6rem .7rem;background:var(--surface-2);
+  position:sticky;top:0;
+}
+table.hist tbody td{padding:.55rem .7rem;border-top:1px solid var(--border);vertical-align:top;}
+table.hist tbody tr:hover{background:var(--surface-2);}
+td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+.neg{color:var(--good);}
+.pos{color:var(--ink);}
+.flag{color:var(--warn);font-weight:700;margin-right:.3rem;}
+.ded{
+  font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--ink-soft);border:1px dashed var(--border);border-radius:99px;
+  padding:.05rem .38rem;margin-left:.35rem;white-space:nowrap;cursor:help;
+}
+.rowactions{display:flex;gap:.4rem;white-space:nowrap;}
+.iconbtn{
+  border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:.8rem;
+  padding:.15rem .3rem;border-radius:6px;
+}
+.iconbtn:hover{background:var(--surface-2);color:var(--ink);}
+.empty{color:var(--ink-soft);font-style:italic;padding:1rem;text-align:center;}
+.status{font-size:.82rem;color:var(--ink-soft);min-height:1.2em;margin-top:.6rem;}
+.status.ok{color:var(--good);}
+footer.note{color:var(--ink-soft);font-size:.8rem;margin-top:2rem;max-width:66ch;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="app-data" type="application/json">{"movements": [{"fecha": "2021-01-01", "tipo": "ajuste", "nota": "Pagado 45", "papa": -15, "abuelo": -22.5, "id": 1}, {"fecha": "2021-01-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 2}, {"fecha": "2021-01-16", "tipo": "ajuste", "nota": "Premio 16E", "papa": -15, "abuelo": -7.5, "id": 3}, {"fecha": "2021-01-16", "tipo": "ajuste", "nota": "Pagado 35", "papa": 0, "abuelo": -35, "id": 4}, {"fecha": "2021-01-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 18, "id": 5}, {"fecha": "2021-01-23", "tipo": "ajuste", "nota": "Premio 23E", "papa": -18, "abuelo": -18, "id": 6}, {"fecha": "2021-01-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 7}, {"fecha": "2021-02-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 8}, {"fecha": "2021-02-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 9}, {"fecha": "2021-02-14", "tipo": "ajuste", "nota": "Pagado 30", "papa": 0, "abuelo": -30, "id": 10}, {"fecha": "2021-02-14", "tipo": "ajuste", "nota": "Premio 14E", "papa": -45, "abuelo": -45, "id": 11}, {"fecha": "2021-02-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 12}, {"fecha": "2021-02-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 13}, {"fecha": "2021-03-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 14}, {"fecha": "2021-03-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 15}, {"fecha": "2021-03-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 16}, {"fecha": "2021-03-20", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": 19.5, "id": 17}, {"fecha": "2021-03-20", "tipo": "ajuste", "nota": "Premio 20F", "papa": -3, "abuelo": 0, "id": 18}, {"fecha": "2021-03-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 19}, {"fecha": "2021-04-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 20}, {"fecha": "2021-04-03", "tipo": "ajuste", "nota": "Premio 27F", "papa": -3, "abuelo": -6, "id": 21}, {"fecha": "2021-04-03", "tipo": "ajuste", "nota": "Premio 6M", "papa": 0, "abuelo": -6, "id": 22}, {"fecha": "2021-04-03", "tipo": "ajuste", "nota": "Premio 20M", "papa": -7.5, "abuelo": 0, "id": 23}, {"fecha": "2021-04-03", "tipo": "ajuste", "nota": "Premio 27M", "papa": -6, "abuelo": -6, "id": 24}, {"fecha": "2021-04-03", "tipo": "ajuste", "nota": "Premio 3A", "papa": 0, "abuelo": -6, "id": 25}, {"fecha": "2021-04-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 26}, {"fecha": "2021-04-10", "tipo": "ajuste", "nota": "Pagado 20", "papa": 0, "abuelo": -20, "id": 27}, {"fecha": "2021-04-10", "tipo": "ajuste", "nota": "Premio 10A", "papa": -7.5, "abuelo": 0, "id": 28}, {"fecha": "2021-04-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 29}, {"fecha": "2021-04-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 30}, {"fecha": "2021-04-24", "tipo": "ajuste", "nota": "Pagado 20", "papa": 0, "abuelo": -20, "id": 31}, {"fecha": "2021-05-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 32}, {"fecha": "2021-05-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 33}, {"fecha": "2021-05-09", "tipo": "ajuste", "nota": "Pagado 50", "papa": 0, "abuelo": -41, "id": 34}, {"fecha": "2021-05-09", "tipo": "ajuste", "nota": "Premio 9M", "papa": -15, "abuelo": -30, "id": 35}, {"fecha": "2021-05-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 36}, {"fecha": "2021-05-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 37}, {"fecha": "2021-05-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 9, "id": 38}, {"fecha": "2021-05-29", "tipo": "ajuste", "nota": "Premio 15M", "papa": -6, "abuelo": -3, "id": 39}, {"fecha": "2021-05-29", "tipo": "ajuste", "nota": "Premio 22M", "papa": 0, "abuelo": -6, "id": 40}, {"fecha": "2021-05-29", "tipo": "ajuste", "nota": "Premio 29M", "papa": -3, "abuelo": -9, "id": 41}, {"fecha": "2021-06-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 22.5, "id": 42}, {"fecha": "2021-06-05", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": 13.5, "id": 43}, {"fecha": "2021-06-05", "tipo": "ajuste", "nota": "Pagado 50", "papa": 0, "abuelo": -50, "id": 44}, {"fecha": "2021-06-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 45}, {"fecha": "2021-06-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 46}, {"fecha": "2021-06-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 47}, {"fecha": "2021-06-26", "tipo": "ajuste", "nota": "Premio 12J", "papa": 0, "abuelo": -6, "id": 48}, {"fecha": "2021-06-26", "tipo": "ajuste", "nota": "Premio 19J", "papa": 0, "abuelo": -12, "id": 49}, {"fecha": "2021-07-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 50}, {"fecha": "2021-07-03", "tipo": "ajuste", "nota": "Premio 3J", "papa": -10, "abuelo": -10, "id": 51}, {"fecha": "2021-07-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 52}, {"fecha": "2021-07-10", "tipo": "ajuste", "nota": "Pagado 30", "papa": 0, "abuelo": -30, "id": 53}, {"fecha": "2021-07-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 54}, {"fecha": "2021-07-17", "tipo": "ajuste", "nota": "Pagado 10", "papa": 0, "abuelo": -10, "id": 55}, {"fecha": "2021-07-17", "tipo": "ajuste", "nota": "Premio 17J", "papa": -3, "abuelo": -3, "id": 56}, {"fecha": "2021-07-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 57}, {"fecha": "2021-07-24", "tipo": "ajuste", "nota": "Premio 24J", "papa": -3, "abuelo": -9, "id": 58}, {"fecha": "2021-07-31", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 59}, {"fecha": "2021-07-31", "tipo": "ajuste", "nota": "Pagado 10", "papa": 0, "abuelo": -10, "id": 60}, {"fecha": "2021-07-31", "tipo": "ajuste", "nota": "Pagado 20", "papa": 0, "abuelo": -20, "id": 61}, {"fecha": "2021-07-31", "tipo": "ajuste", "nota": "Premio 31", "papa": -3, "abuelo": -3, "id": 62}, {"fecha": "2021-08-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 63}, {"fecha": "2021-08-07", "tipo": "ajuste", "nota": "Pagado 20", "papa": 0, "abuelo": -20, "id": 64}, {"fecha": "2021-08-07", "tipo": "ajuste", "nota": "Premio 7A", "papa": -15, "abuelo": -15, "id": 65}, {"fecha": "2021-08-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 66}, {"fecha": "2021-08-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 67}, {"fecha": "2021-08-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 68}, {"fecha": "2021-08-28", "tipo": "ajuste", "nota": "Pagado 15A", "papa": 0, "abuelo": -15, "id": 69}, {"fecha": "2021-08-28", "tipo": "ajuste", "nota": "Pagado 23A", "papa": 0, "abuelo": -20, "id": 70}, {"fecha": "2021-08-28", "tipo": "ajuste", "nota": "Premio 28A", "papa": 0, "abuelo": -18, "id": 71}, {"fecha": "2021-09-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 72}, {"fecha": "2021-09-04", "tipo": "ajuste", "nota": "Premio 4S", "papa": -15, "abuelo": -15, "id": 73}, {"fecha": "2021-09-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 74}, {"fecha": "2021-09-11", "tipo": "ajuste", "nota": "Premio 11S", "papa": -12, "abuelo": -12, "id": 75}, {"fecha": "2021-09-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 76}, {"fecha": "2021-09-18", "tipo": "ajuste", "nota": "Premio 18S", "papa": -3, "abuelo": -9, "id": 77}, {"fecha": "2021-09-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 78}, {"fecha": "2021-09-25", "tipo": "ajuste", "nota": "Premio 25S", "papa": -6, "abuelo": -24, "id": 79}, {"fecha": "2021-10-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 80}, {"fecha": "2021-10-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 81}, {"fecha": "2021-10-09", "tipo": "ajuste", "nota": "Pagado 8O", "papa": 0, "abuelo": -6, "id": 82}, {"fecha": "2021-10-09", "tipo": "ajuste", "nota": "Premio 9O", "papa": -15, "abuelo": -15, "id": 83}, {"fecha": "2021-10-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 84}, {"fecha": "2021-10-16", "tipo": "ajuste", "nota": "Pagado 12O", "papa": 0, "abuelo": -10, "id": 85}, {"fecha": "2021-10-16", "tipo": "ajuste", "nota": "Premio 16O", "papa": -3, "abuelo": -9, "id": 86}, {"fecha": "2021-10-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 87}, {"fecha": "2021-10-23", "tipo": "ajuste", "nota": "Pagado 19O", "papa": 0, "abuelo": -20, "id": 88}, {"fecha": "2021-10-23", "tipo": "ajuste", "nota": "Premio 23O", "papa": -9, "abuelo": -9, "id": 89}, {"fecha": "2021-10-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 90}, {"fecha": "2021-10-30", "tipo": "ajuste", "nota": "Premio 30O", "papa": -3, "abuelo": -3, "id": 91}, {"fecha": "2021-11-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 92}, {"fecha": "2021-11-06", "tipo": "ajuste", "nota": "Premio 6N", "papa": -30, "abuelo": -30, "id": 93}, {"fecha": "2021-11-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 94}, {"fecha": "2021-11-13", "tipo": "ajuste", "nota": "Premio 13N", "papa": -3, "abuelo": -3, "id": 95}, {"fecha": "2021-11-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 96}, {"fecha": "2021-11-20", "tipo": "ajuste", "nota": "Premio 20N", "papa": -9, "abuelo": -15, "id": 97}, {"fecha": "2021-11-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 98}, {"fecha": "2021-11-27", "tipo": "ajuste", "nota": "Premio 27N", "papa": -3, "abuelo": -9, "id": 99}, {"fecha": "2021-12-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 100}, {"fecha": "2021-12-06", "tipo": "ajuste", "nota": "Pagado 8D", "papa": 0, "abuelo": -10, "id": 101}, {"fecha": "2021-12-06", "tipo": "ajuste", "nota": "Premios 6D", "papa": -15, "abuelo": -45, "id": 102}, {"fecha": "2021-12-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 103}, {"fecha": "2021-12-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 104}, {"fecha": "2021-12-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 105}, {"fecha": "2021-12-22", "tipo": "ajuste", "nota": "Pagado 15D", "papa": 0, "abuelo": -50, "id": 106}, {"fecha": "2021-12-22", "tipo": "ajuste", "nota": "79478", "papa": 0, "abuelo": 20, "id": 107}, {"fecha": "2021-12-22", "tipo": "ajuste", "nota": "Premio 18D", "papa": 0, "abuelo": -6, "id": 108}, {"fecha": "2022-01-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 109}, {"fecha": "2022-01-06", "tipo": "ajuste", "nota": "Premio 6E", "papa": -10, "abuelo": -110, "id": 110}, {"fecha": "2022-01-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 111}, {"fecha": "2022-01-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -22.5, "id": 112}, {"fecha": "2022-01-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 24, "id": 113}, {"fecha": "2022-01-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 114}, {"fecha": "2022-01-29", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 115}, {"fecha": "2022-02-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 116}, {"fecha": "2022-02-05", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 117}, {"fecha": "2022-02-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 118}, {"fecha": "2022-02-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 119}, {"fecha": "2022-02-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 120}, {"fecha": "2022-02-19", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 121}, {"fecha": "2022-02-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 122}, {"fecha": "2022-02-26", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 123}, {"fecha": "2022-03-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 124}, {"fecha": "2022-03-05", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -26, "id": 125}, {"fecha": "2022-03-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 126}, {"fecha": "2022-03-12", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 127}, {"fecha": "2022-03-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 128}, {"fecha": "2022-03-19", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -57.5, "id": 129}, {"fecha": "2022-03-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 130}, {"fecha": "2022-03-26", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -36, "id": 131}, {"fecha": "2022-04-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 132}, {"fecha": "2022-04-02", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 133}, {"fecha": "2022-04-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 134}, {"fecha": "2022-04-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -22.5, "id": 135}, {"fecha": "2022-04-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 136}, {"fecha": "2022-04-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 137}, {"fecha": "2022-05-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 138}, {"fecha": "2022-05-01", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -90, "id": 139}, {"fecha": "2022-05-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 140}, {"fecha": "2022-05-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 141}, {"fecha": "2022-05-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 142}, {"fecha": "2022-05-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 143}, {"fecha": "2022-05-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 144}, {"fecha": "2022-06-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 145}, {"fecha": "2022-06-04", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -22.5, "id": 146}, {"fecha": "2022-06-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 147}, {"fecha": "2022-06-11", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 148}, {"fecha": "2022-06-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 149}, {"fecha": "2022-06-18", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -18, "id": 150}, {"fecha": "2022-06-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 151}, {"fecha": "2022-07-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 152}, {"fecha": "2022-07-02", "tipo": "ajuste", "nota": "Abona", "papa": 0, "abuelo": -40, "id": 153}, {"fecha": "2022-07-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 154}, {"fecha": "2022-07-09", "tipo": "ajuste", "nota": "Premio (le devuelvo 138 en metálico)", "papa": -232.5, "abuelo": -94.5, "id": 155}, {"fecha": "2022-07-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 156}, {"fecha": "2022-07-16", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 157}, {"fecha": "2022-07-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 158}, {"fecha": "2022-07-23", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 159}, {"fecha": "2022-07-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 160}, {"fecha": "2022-07-30", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 161}, {"fecha": "2022-08-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 162}, {"fecha": "2022-08-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 163}, {"fecha": "2022-08-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 164}, {"fecha": "2022-08-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 165}, {"fecha": "2022-08-27", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 166}, {"fecha": "2022-09-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 167}, {"fecha": "2022-09-03", "tipo": "ajuste", "nota": "Abona 50 y premio 7.5", "papa": -7.5, "abuelo": -57.5, "id": 168}, {"fecha": "2022-09-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 169}, {"fecha": "2022-09-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -12, "id": 170}, {"fecha": "2022-09-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 171}, {"fecha": "2022-09-17", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 172}, {"fecha": "2022-09-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 173}, {"fecha": "2022-09-24", "tipo": "ajuste", "nota": "Abona 3.5 y premio", "papa": -6, "abuelo": -9.5, "id": 174}, {"fecha": "2022-10-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 175}, {"fecha": "2022-10-01", "tipo": "ajuste", "nota": "PREMIO Y ABONO 43,5", "papa": -9, "abuelo": -52.5, "id": 176}, {"fecha": "2022-10-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 177}, {"fecha": "2022-10-08", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -21, "id": 178}, {"fecha": "2022-10-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 179}, {"fecha": "2022-10-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 180}, {"fecha": "2022-10-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 181}, {"fecha": "2022-10-22", "tipo": "ajuste", "nota": "Ajuste", "papa": -78, "abuelo": -84, "id": 182}, {"fecha": "2022-10-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 183}, {"fecha": "2022-10-29", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 184}, {"fecha": "2022-11-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 185}, {"fecha": "2022-11-05", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -15, "id": 186}, {"fecha": "2022-11-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 187}, {"fecha": "2022-11-12", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 188}, {"fecha": "2022-11-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 189}, {"fecha": "2022-11-19", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 190}, {"fecha": "2022-11-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 191}, {"fecha": "2022-11-26", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -21, "id": 192}, {"fecha": "2022-12-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 193}, {"fecha": "2022-12-03", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 194}, {"fecha": "2022-12-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 195}, {"fecha": "2022-12-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 196}, {"fecha": "2022-12-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 6, "id": 197}, {"fecha": "2022-12-17", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 198}, {"fecha": "2023-01-06", "tipo": "ajuste", "nota": "Ajuste", "papa": -10, "abuelo": -10, "id": 199}, {"fecha": "2023-01-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 200}, {"fecha": "2023-01-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 201}, {"fecha": "2023-01-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 24, "id": 202}, {"fecha": "2023-01-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 203}, {"fecha": "2023-01-28", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 204}, {"fecha": "2023-02-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 205}, {"fecha": "2023-02-04", "tipo": "ajuste", "nota": "Abona 20€", "papa": -6, "abuelo": -26, "id": 206}, {"fecha": "2023-02-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 207}, {"fecha": "2023-02-11", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -18, "id": 208}, {"fecha": "2023-02-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 209}, {"fecha": "2023-02-18", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -15, "id": 210}, {"fecha": "2023-02-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 211}, {"fecha": "2023-02-25", "tipo": "ajuste", "nota": "Abona 20€", "papa": -9, "abuelo": -29, "id": 212}, {"fecha": "2023-03-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 213}, {"fecha": "2023-03-04", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 214}, {"fecha": "2023-03-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 215}, {"fecha": "2023-03-11", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 216}, {"fecha": "2023-03-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 217}, {"fecha": "2023-03-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 218}, {"fecha": "2023-03-25", "tipo": "ajuste", "nota": "Abona 60€", "papa": -9, "abuelo": -69, "id": 219}, {"fecha": "2023-04-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 220}, {"fecha": "2023-04-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 221}, {"fecha": "2023-04-08", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -15, "id": 222}, {"fecha": "2023-04-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 223}, {"fecha": "2023-04-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 224}, {"fecha": "2023-04-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 225}, {"fecha": "2023-04-22", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 226}, {"fecha": "2023-04-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 227}, {"fecha": "2023-04-29", "tipo": "ajuste", "nota": "Abona 30€", "papa": -3, "abuelo": -33, "id": 228}, {"fecha": "2023-05-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 229}, {"fecha": "2023-05-07", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 230}, {"fecha": "2023-05-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 231}, {"fecha": "2023-05-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 232}, {"fecha": "2023-05-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 233}, {"fecha": "2023-05-20", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -9, "id": 234}, {"fecha": "2023-05-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 235}, {"fecha": "2023-05-27", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -20.5, "id": 236}, {"fecha": "2023-06-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 237}, {"fecha": "2023-06-03", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 238}, {"fecha": "2023-06-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 6, "id": 239}, {"fecha": "2023-06-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 240}, {"fecha": "2023-06-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 6, "id": 241}, {"fecha": "2023-06-17", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 242}, {"fecha": "2023-06-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 6, "id": 243}, {"fecha": "2023-06-24", "tipo": "ajuste", "nota": "Abona 100€", "papa": -3, "abuelo": -103, "id": 244}, {"fecha": "2023-07-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 245}, {"fecha": "2023-07-01", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -20, "id": 246}, {"fecha": "2023-07-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 247}, {"fecha": "2023-07-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 248}, {"fecha": "2023-07-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 249}, {"fecha": "2023-07-22", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 250}, {"fecha": "2023-07-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 251}, {"fecha": "2023-07-29", "tipo": "ajuste", "nota": "Abona 20€", "papa": 0, "abuelo": -20, "id": 252}, {"fecha": "2023-08-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 253}, {"fecha": "2023-08-05", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 254}, {"fecha": "2023-08-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 255}, {"fecha": "2023-08-12", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -12, "id": 256}, {"fecha": "2023-08-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 257}, {"fecha": "2023-08-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 258}, {"fecha": "2023-09-02", "tipo": "jugada", "nota": "02-sep", "papa": 6, "abuelo": 12, "id": 259}, {"fecha": "2023-09-09", "tipo": "jugada", "nota": "09-sep", "papa": 15, "abuelo": 30, "id": 260}, {"fecha": "2023-09-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 261}, {"fecha": "2023-09-16", "tipo": "jugada", "nota": "16-sep", "papa": 6, "abuelo": 12, "id": 262}, {"fecha": "2023-09-23", "tipo": "jugada", "nota": "23-sep", "papa": 6, "abuelo": 12, "id": 263}, {"fecha": "2023-09-23", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 264}, {"fecha": "2023-09-30", "tipo": "jugada", "nota": "30-sep", "papa": 6, "abuelo": 12, "id": 265}, {"fecha": "2023-09-30", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 266}, {"fecha": "2023-10-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 267}, {"fecha": "2023-10-07", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 268}, {"fecha": "2023-10-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 269}, {"fecha": "2023-10-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 270}, {"fecha": "2023-10-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 271}, {"fecha": "2023-10-21", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -9, "id": 272}, {"fecha": "2023-10-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 273}, {"fecha": "2023-10-28", "tipo": "ajuste", "nota": "Premio 15€ y abona 141,50€", "papa": -3, "abuelo": -156.5, "id": 274}, {"fecha": "2023-11-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 275}, {"fecha": "2023-11-04", "tipo": "ajuste", "nota": "Ajuste", "papa": -22.5, "abuelo": -22.5, "id": 276}, {"fecha": "2023-11-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 277}, {"fecha": "2023-11-11", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 278}, {"fecha": "2023-11-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 279}, {"fecha": "2023-11-18", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 280}, {"fecha": "2023-11-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 281}, {"fecha": "2023-11-25", "tipo": "ajuste", "nota": "Abona 20€", "papa": 0, "abuelo": -20, "id": 282}, {"fecha": "2023-12-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 283}, {"fecha": "2023-12-02", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 284}, {"fecha": "2023-12-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 285}, {"fecha": "2023-12-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 286}, {"fecha": "2023-12-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 287}, {"fecha": "2023-12-16", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -6, "id": 288}, {"fecha": "2024-01-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 289}, {"fecha": "2024-01-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 290}, {"fecha": "2024-01-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 24, "id": 291}, {"fecha": "2024-01-20", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -6, "id": 292}, {"fecha": "2024-01-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 293}, {"fecha": "2024-01-27", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -30, "id": 294}, {"fecha": "2024-02-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 295}, {"fecha": "2024-02-03", "tipo": "ajuste", "nota": "ABONA 65€ Y PREMIOS", "papa": -3, "abuelo": -68.5, "id": 296}, {"fecha": "2024-02-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 297}, {"fecha": "2024-02-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -12, "id": 298}, {"fecha": "2024-02-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 299}, {"fecha": "2024-02-17", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 300}, {"fecha": "2024-02-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 301}, {"fecha": "2024-02-24", "tipo": "ajuste", "nota": "Abona", "papa": 0, "abuelo": -55.5, "id": 302}, {"fecha": "2024-03-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 303}, {"fecha": "2024-03-02", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 304}, {"fecha": "2024-03-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 305}, {"fecha": "2024-03-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -6, "id": 306}, {"fecha": "2024-03-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 307}, {"fecha": "2024-03-16", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 308}, {"fecha": "2024-03-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 309}, {"fecha": "2024-03-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 310}, {"fecha": "2024-03-30", "tipo": "ajuste", "nota": "Abona 25€ + 18€ premio 97", "papa": 0, "abuelo": -43, "id": 311}, {"fecha": "2024-04-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 312}, {"fecha": "2024-04-06", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 313}, {"fecha": "2024-04-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 314}, {"fecha": "2024-04-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -9, "id": 315}, {"fecha": "2024-04-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 316}, {"fecha": "2024-04-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 317}, {"fecha": "2024-04-27", "tipo": "ajuste", "nota": "Abona 50€", "papa": 0, "abuelo": -50, "id": 318}, {"fecha": "2024-05-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 319}, {"fecha": "2024-05-05", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -22.5, "id": 320}, {"fecha": "2024-05-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 321}, {"fecha": "2024-05-11", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 322}, {"fecha": "2024-05-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 323}, {"fecha": "2024-05-18", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 324}, {"fecha": "2024-05-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 325}, {"fecha": "2024-05-25", "tipo": "ajuste", "nota": "Premio y Abona 30€", "papa": -6, "abuelo": -42, "id": 326}, {"fecha": "2024-06-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 327}, {"fecha": "2024-06-01", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -15, "id": 328}, {"fecha": "2024-06-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 329}, {"fecha": "2024-06-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 330}, {"fecha": "2024-06-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 331}, {"fecha": "2024-06-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 332}, {"fecha": "2024-06-22", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 333}, {"fecha": "2024-06-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 334}, {"fecha": "2024-06-29", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 335}, {"fecha": "2024-07-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 336}, {"fecha": "2024-07-06", "tipo": "ajuste", "nota": "Abona 60€ y premio 30€", "papa": -30, "abuelo": -90, "id": 337}, {"fecha": "2024-07-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 338}, {"fecha": "2024-07-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 339}, {"fecha": "2024-07-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 340}, {"fecha": "2024-07-20", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -21, "id": 341}, {"fecha": "2024-07-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 342}, {"fecha": "2024-07-27", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -15, "id": 343}, {"fecha": "2024-08-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 344}, {"fecha": "2024-08-03", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -22.5, "id": 345}, {"fecha": "2024-08-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 346}, {"fecha": "2024-08-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 347}, {"fecha": "2024-08-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 348}, {"fecha": "2024-08-17", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 349}, {"fecha": "2024-08-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 350}, {"fecha": "2024-08-24", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -12, "id": 351}, {"fecha": "2024-08-31", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 352}, {"fecha": "2024-08-31", "tipo": "ajuste", "nota": "Abona 25€", "papa": 0, "abuelo": -25, "id": 353}, {"fecha": "2024-09-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 354}, {"fecha": "2024-09-07", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -45, "id": 355}, {"fecha": "2024-09-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 356}, {"fecha": "2024-09-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 357}, {"fecha": "2024-09-21", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 358}, {"fecha": "2024-09-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 359}, {"fecha": "2024-09-28", "tipo": "ajuste", "nota": "Abona 10€", "papa": -9, "abuelo": -19, "id": 360}, {"fecha": "2024-10-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 361}, {"fecha": "2024-10-05", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 362}, {"fecha": "2024-10-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 30, "id": 363}, {"fecha": "2024-10-12", "tipo": "ajuste", "nota": "Ajuste", "papa": -22.5, "abuelo": -37.5, "id": 364}, {"fecha": "2024-10-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 365}, {"fecha": "2024-10-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 366}, {"fecha": "2024-10-26", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -9, "id": 367}, {"fecha": "2024-11-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 368}, {"fecha": "2024-11-02", "tipo": "ajuste", "nota": "Abona 21,50€", "papa": -3, "abuelo": -24.5, "id": 369}, {"fecha": "2024-11-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 370}, {"fecha": "2024-11-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -37.5, "abuelo": -52.5, "id": 371}, {"fecha": "2024-11-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 372}, {"fecha": "2024-11-16", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 373}, {"fecha": "2024-11-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 374}, {"fecha": "2024-11-23", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 375}, {"fecha": "2024-11-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 376}, {"fecha": "2024-11-30", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 377}, {"fecha": "2024-12-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 378}, {"fecha": "2024-12-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 379}, {"fecha": "2024-12-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -18, "abuelo": -48, "id": 380}, {"fecha": "2024-12-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 0, "abuelo": 60, "id": 381}, {"fecha": "2024-12-22", "tipo": "ajuste", "nota": "abono navidad", "papa": 0, "abuelo": -60, "id": 382}, {"fecha": "2025-01-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 0, "abuelo": 60, "id": 383}, {"fecha": "2025-01-06", "tipo": "ajuste", "nota": "ABONA y premios niño", "papa": 0, "abuelo": -160, "id": 384}, {"fecha": "2025-01-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 385}, {"fecha": "2025-01-11", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -7.5, "id": 386}, {"fecha": "2025-01-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 24, "id": 387}, {"fecha": "2025-01-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 388}, {"fecha": "2025-02-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 389}, {"fecha": "2025-02-01", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -9, "id": 390}, {"fecha": "2025-02-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 391}, {"fecha": "2025-02-08", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 392}, {"fecha": "2025-02-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 393}, {"fecha": "2025-02-15", "tipo": "ajuste", "nota": "Abona 15€", "papa": 0, "abuelo": -15, "id": 394}, {"fecha": "2025-02-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 395}, {"fecha": "2025-02-22", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -12, "id": 396}, {"fecha": "2025-03-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 397}, {"fecha": "2025-03-01", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 398}, {"fecha": "2025-03-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 399}, {"fecha": "2025-03-08", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -15, "id": 400}, {"fecha": "2025-03-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 401}, {"fecha": "2025-03-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -21, "id": 402}, {"fecha": "2025-03-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 403}, {"fecha": "2025-03-22", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -15, "id": 404}, {"fecha": "2025-03-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 405}, {"fecha": "2025-03-29", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -21, "id": 406}, {"fecha": "2025-04-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 407}, {"fecha": "2025-04-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 408}, {"fecha": "2025-04-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 409}, {"fecha": "2025-04-19", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 410}, {"fecha": "2025-04-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 411}, {"fecha": "2025-05-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 412}, {"fecha": "2025-05-03", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -15, "id": 413}, {"fecha": "2025-05-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 414}, {"fecha": "2025-05-10", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -18, "id": 415}, {"fecha": "2025-05-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 416}, {"fecha": "2025-05-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 417}, {"fecha": "2025-05-24", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -6, "id": 418}, {"fecha": "2025-05-31", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 419}, {"fecha": "2025-05-31", "tipo": "ajuste", "nota": "Abona 80€ y 6€ premio ", "papa": -6, "abuelo": -86, "id": 420}, {"fecha": "2025-06-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 421}, {"fecha": "2025-06-07", "tipo": "ajuste", "nota": "Ajuste", "papa": -22.5, "abuelo": -22.5, "id": 422}, {"fecha": "2025-06-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 423}, {"fecha": "2025-06-14", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 424}, {"fecha": "2025-06-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 425}, {"fecha": "2025-06-21", "tipo": "ajuste", "nota": "Ajuste", "papa": 0, "abuelo": -18, "id": 426}, {"fecha": "2025-06-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 427}, {"fecha": "2025-06-28", "tipo": "ajuste", "nota": "Abona 30 y 15 de premio", "papa": -3, "abuelo": -45, "id": 428}, {"fecha": "2025-07-05", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 429}, {"fecha": "2025-07-05", "tipo": "ajuste", "nota": "Ajuste", "papa": -10, "abuelo": -10, "id": 430}, {"fecha": "2025-07-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 431}, {"fecha": "2025-07-19", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 432}, {"fecha": "2025-07-19", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 433}, {"fecha": "2025-07-26", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 434}, {"fecha": "2025-07-26", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -6, "id": 435}, {"fecha": "2025-08-02", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 436}, {"fecha": "2025-08-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 437}, {"fecha": "2025-08-09", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 438}, {"fecha": "2025-08-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 439}, {"fecha": "2025-08-16", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 440}, {"fecha": "2025-08-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 441}, {"fecha": "2025-08-23", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -15, "id": 442}, {"fecha": "2025-08-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 443}, {"fecha": "2025-08-30", "tipo": "ajuste", "nota": "Abona 100€ lotería ", "papa": 0, "abuelo": -100, "id": 444}, {"fecha": "2025-09-06", "tipo": "jugada", "nota": "06-sep", "papa": 15, "abuelo": 30, "id": 445}, {"fecha": "2025-09-06", "tipo": "ajuste", "nota": "Ajuste", "papa": -7.5, "abuelo": -13.5, "id": 446}, {"fecha": "2025-09-13", "tipo": "jugada", "nota": "13-sep", "papa": 6, "abuelo": 12, "id": 447}, {"fecha": "2025-09-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -12, "abuelo": -12, "id": 448}, {"fecha": "2025-09-20", "tipo": "jugada", "nota": "20-sep", "papa": 6, "abuelo": 12, "id": 449}, {"fecha": "2025-09-20", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -15, "id": 450}, {"fecha": "2025-09-27", "tipo": "jugada", "nota": "27-sep", "papa": 6, "abuelo": 12, "id": 451}, {"fecha": "2025-09-27", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -21, "id": 452}, {"fecha": "2025-10-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 453}, {"fecha": "2025-10-04", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 454}, {"fecha": "2025-10-12", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 455}, {"fecha": "2025-10-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 456}, {"fecha": "2025-10-18", "tipo": "ajuste", "nota": "Ajuste", "papa": -9, "abuelo": -15, "id": 457}, {"fecha": "2025-10-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 458}, {"fecha": "2025-10-25", "tipo": "ajuste", "nota": "Abona 44 y 18 premio", "papa": 0, "abuelo": -62, "id": 459}, {"fecha": "2025-11-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 460}, {"fecha": "2025-11-01", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -9, "id": 461}, {"fecha": "2025-11-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 462}, {"fecha": "2025-11-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 463}, {"fecha": "2025-11-15", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 464}, {"fecha": "2025-11-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 465}, {"fecha": "2025-11-22", "tipo": "ajuste", "nota": "Ajuste", "papa": -3, "abuelo": -3, "id": 466}, {"fecha": "2025-11-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 467}, {"fecha": "2025-12-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 468}, {"fecha": "2025-12-06", "tipo": "ajuste", "nota": "Ajuste", "papa": -15, "abuelo": -15, "id": 469}, {"fecha": "2025-12-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 470}, {"fecha": "2025-12-13", "tipo": "ajuste", "nota": "Ajuste", "papa": -6, "abuelo": -12, "id": 471}, {"fecha": "2025-12-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 472}, {"fecha": "2026-01-01", "tipo": "ajuste", "nota": "Ajuste de cierre 2025→2026 (diferencia sin explicar en la hoja original, revisar)", "papa": 213.5, "abuelo": -40.0, "id": 473}, {"fecha": "2026-01-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 474}, {"fecha": "2026-01-06", "tipo": "ajuste", "nota": "ABONA 118€", "papa": 0, "abuelo": -118, "id": 475}, {"fecha": "2026-01-10", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 476}, {"fecha": "2026-01-10", "tipo": "ajuste", "nota": "15€ 34 y 15€ el 97", "papa": -7.5, "abuelo": -22.5, "id": 477}, {"fecha": "2026-01-17", "tipo": "jugada", "nota": "Jugada semanal", "papa": 12, "abuelo": 24, "id": 478}, {"fecha": "2026-01-17", "tipo": "ajuste", "nota": "12€ el 34", "papa": -6, "abuelo": -6, "id": 479}, {"fecha": "2026-01-24", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 480}, {"fecha": "2026-01-24", "tipo": "ajuste", "nota": "6€ el 12", "papa": -3, "abuelo": -3, "id": 481}, {"fecha": "2026-01-31", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 482}, {"fecha": "2026-01-31", "tipo": "ajuste", "nota": "12€ el 12", "papa": -6, "abuelo": -6, "id": 483}, {"fecha": "2026-02-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 484}, {"fecha": "2026-02-07", "tipo": "ajuste", "nota": "6€ el 97", "papa": 0, "abuelo": -6, "id": 485}, {"fecha": "2026-02-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 486}, {"fecha": "2026-02-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 487}, {"fecha": "2026-02-21", "tipo": "ajuste", "nota": "6€ el 34", "papa": -3, "abuelo": -3, "id": 488}, {"fecha": "2026-02-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 489}, {"fecha": "2026-02-28", "tipo": "ajuste", "nota": "36€ el 34", "papa": -18, "abuelo": -18, "id": 490}, {"fecha": "2026-03-07", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 491}, {"fecha": "2026-03-07", "tipo": "ajuste", "nota": "18€ el 97", "papa": 0, "abuelo": -18, "id": 492}, {"fecha": "2026-03-14", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 493}, {"fecha": "2026-03-14", "tipo": "ajuste", "nota": "18€ el 97", "papa": 0, "abuelo": -18, "id": 494}, {"fecha": "2026-03-21", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 495}, {"fecha": "2026-03-28", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 496}, {"fecha": "2026-04-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 497}, {"fecha": "2026-04-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 498}, {"fecha": "2026-04-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 499}, {"fecha": "2026-04-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 500}, {"fecha": "2026-05-03", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 501}, {"fecha": "2026-05-09", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 502}, {"fecha": "2026-05-16", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 503}, {"fecha": "2026-05-23", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 504}, {"fecha": "2026-05-30", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 505}, {"fecha": "2026-06-06", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 506}, {"fecha": "2026-06-13", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 507}, {"fecha": "2026-06-20", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 508}, {"fecha": "2026-06-27", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 509}, {"fecha": "2026-07-04", "tipo": "jugada", "nota": "Jugada semanal", "papa": 20, "abuelo": 40, "id": 510}, {"fecha": "2026-07-11", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 511}, {"fecha": "2026-07-18", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 512}, {"fecha": "2026-07-25", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 513}, {"fecha": "2026-08-01", "tipo": "jugada", "nota": "Jugada semanal", "papa": 15, "abuelo": 30, "id": 514}, {"fecha": "2026-08-08", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 515}, {"fecha": "2026-08-15", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 516}, {"fecha": "2026-08-22", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12, "id": 517}, {"id": 519, "fecha": "2026-03-21", "tipo": "ajuste", "nota": "15 € en el 12", "papa": -7.5, "abuelo": -7.5}, {"id": 520, "fecha": "2026-04-04", "tipo": "ajuste", "nota": "6 € en el 7", "papa": 0, "abuelo": -6}, {"id": 521, "fecha": "2026-04-25", "tipo": "ajuste", "nota": "6 € en el 12", "papa": -3, "abuelo": -3}, {"id": 522, "fecha": "2026-05-03", "tipo": "ajuste", "nota": "15 € en el 12 y 7", "papa": -7.5, "abuelo": -22.5}, {"id": 523, "fecha": "2026-05-09", "tipo": "ajuste", "nota": "6 € en el 12 y 34", "papa": -6, "abuelo": -6}, {"id": 524, "fecha": "2026-05-16", "tipo": "ajuste", "nota": "12 € en el 12 y 6 € en el 34", "papa": -9, "abuelo": -9}, {"id": 525, "fecha": "2026-05-23", "tipo": "ajuste", "nota": "6 € en el 12", "papa": -3, "abuelo": -3}, {"id": 526, "fecha": "2026-05-30", "tipo": "ajuste", "nota": "6€ en el 12", "papa": -3, "abuelo": -3}, {"id": 527, "fecha": "2026-06-06", "tipo": "ajuste", "nota": "15 en el 12 y 34", "papa": -15, "abuelo": -15}, {"id": 528, "fecha": "2026-06-13", "tipo": "ajuste", "nota": "18€ en el 7", "papa": 0, "abuelo": -18}, {"id": 529, "fecha": "2026-06-20", "tipo": "ajuste", "nota": "6€ en el 12 y 7", "papa": -3, "abuelo": -9}, {"id": 530, "fecha": "2026-06-27", "tipo": "ajuste", "nota": "6€ en el 7", "papa": 0, "abuelo": -6}, {"id": 531, "fecha": "2026-07-04", "tipo": "ajuste", "nota": "60€ en el 34", "papa": -30, "abuelo": -30}, {"id": 532, "fecha": "2026-07-11", "tipo": "ajuste", "nota": "15€ en todos", "papa": -15, "abuelo": -30}, {"id": 533, "fecha": "2026-07-18", "tipo": "ajuste", "nota": "6€ en el 7", "papa": 0, "abuelo": -6}, {"id": 534, "fecha": "2026-08-01", "tipo": "ajuste", "nota": "15 € en el 7", "papa": 0, "abuelo": -15}, {"id": 535, "fecha": "2026-08-08", "tipo": "ajuste", "nota": "12€ en el 7 y 6 € en el 12", "papa": -3, "abuelo": -15}, {"id": 536, "fecha": "2026-08-15", "tipo": "ajuste", "nota": "6 € en el 12 y 34", "papa": -6, "abuelo": -6}, {"id": 537, "fecha": "2026-08-22", "tipo": "ajuste", "nota": "30€ en el 12 y 6 en l 7", "papa": -15, "abuelo": -21}, {"id": 538, "fecha": "2026-08-29", "tipo": "jugada", "nota": "Jugada semanal", "papa": 6, "abuelo": 12}], "pendientes": [{"fecha": "2026-09-05", "precio": 15.0}, {"fecha": "2026-09-12", "precio": 6.0}, {"fecha": "2026-09-19", "precio": 6.0}, {"fecha": "2026-09-26", "precio": 6.0}, {"fecha": "2026-10-03", "precio": 6.0}, {"fecha": "2026-10-10", "precio": 15.0}, {"fecha": "2026-10-17", "precio": 6.0}, {"fecha": "2026-10-24", "precio": 6.0}, {"fecha": "2026-10-31", "precio": 15.0}, {"fecha": "2026-11-07", "precio": 6.0}, {"fecha": "2026-11-14", "precio": 6.0}, {"fecha": "2026-11-21", "precio": 6.0}, {"fecha": "2026-11-28", "precio": 6.0}, {"fecha": "2026-12-05", "precio": 15.0}, {"fecha": "2026-12-12", "precio": 6.0}, {"fecha": "2026-12-22", "precio": 20.0}], "saltadas": [], "deshacer": null, "loteria": {"pagados": ["2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"]}}</script>
+<script>
+const LOGIC_SRC = document.currentScript.textContent;
+
+const NUMEROS = [
+  { id:'12', numero:'19012', reparto:.5,  nota:'mitad Papá / mitad Abuelo y Malle' },
+  { id:'34', numero:'32534', reparto:.5,  nota:'mitad Papá / mitad Abuelo y Malle' },
+  { id:'97', numero:'21997', reparto:0,   nota:'entero de Abuelo y Malle' }
+];
+
+const raw = JSON.parse(document.getElementById('app-data').textContent);
+let state = Array.isArray(raw)
+  ? { movements: raw, pendientes: [], saltadas: [], deshacer: null, loteria: { pagados: [] } }
+  : { movements: raw.movements || [], pendientes: raw.pendientes || [],
+      saltadas: raw.saltadas || [], deshacer: raw.deshacer || null,
+      loteria: raw.loteria || { pagados: [] } };
+
+/* precios habituales observados en el histórico */
+const PRECIO_NORMAL = 6;
+const PRECIO_ESPECIAL = 20;   // Niño (6 ene), Especial de Verano (1er sábado de julio), Navidad (22 dic)
+const MESES_VISTA = 6;        // hasta dónde se proponen sorteos nuevos
+
+let ui = { year:'todos', tipo:'todos', editId:null, editTipo:null, tab:'sorteo', verTodasPend:false, flash:'' };
+
+function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+function fmtEUR(n){ return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n); }
+function hoy(){ return new Date().toISOString().slice(0,10); }
+function fmtFecha(iso){
+  if(!iso) return '—';
+  return new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric'})
+    .format(new Date(iso + 'T00:00:00'));
+}
+function fmtFechaCorta(iso){
+  if(!iso) return '—';
+  return new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short'})
+    .format(new Date(iso + 'T00:00:00'));
+}
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function nextId(){ return state.movements.reduce((m,x) => Math.max(m, x.id), 0) + 1; }
+
+/* Guarda cómo estaba todo justo antes de tocar nada, para poder volver atrás.
+   Se publica con la página, así que el "Deshacer" sigue ahí aunque recargues
+   o entres desde otro sitio. */
+function guardarDeshacer(desc){
+  state.deshacer = {
+    desc: desc,
+    movements: state.movements.map(m => ({ ...m })),
+    pendientes: state.pendientes.map(p => ({ ...p })),
+    saltadas: state.saltadas.slice(),
+    loteria: { pagados: state.loteria.pagados.slice() }
+  };
+}
+
+/* Evita apuntar dos veces el mismo sorteo: ya pasó una vez con el de Navidad. */
+function yaHaySorteo(fecha, excluirId){
+  return state.movements.some(m => m.tipo === 'jugada' && m.fecha === fecha && m.id !== excluirId);
+}
+function confirmarDuplicado(fecha, excluirId){
+  if(!yaHaySorteo(fecha, excluirId)) return true;
+  return confirm('Ya hay un sorteo apuntado el ' + fmtFecha(fecha) + '.\n\n'
+               + 'Si lo apuntas otra vez se cobrará dos veces. ¿Seguro que quieres añadirlo?');
+}
+function totales(list){
+  let papa = 0, abuelo = 0;
+  for(const m of list){ papa += m.papa; abuelo += m.abuelo; }
+  return { papa: round2(papa), abuelo: round2(abuelo) };
+}
+function years(){
+  return Array.from(new Set(state.movements.filter(m=>m.fecha).map(m=>m.fecha.slice(0,4)))).sort().reverse();
+}
+function statusPill(a){
+  if(a >  .01) return { label:'Debe ' + fmtEUR(a), cls:'warn' };
+  if(a < -.01) return { label:'A favor ' + fmtEUR(Math.abs(a)), cls:'good' };
+  return { label:'Al día', cls:'good' };
+}
+function ultimaJugada(){
+  const j = state.movements.filter(m => m.tipo === 'jugada' && m.fecha).map(m => m.fecha).sort();
+  return j.length ? j[j.length-1] : hoy();
+}
+function iso(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+/* Propone los sorteos que vienen: todos los sábados, más los tres especiales
+   del año (6 de enero, primer sábado de julio y 22 de diciembre). Los precios
+   de los especiales son los de siempre; el resto sale a 6 € porque es el
+   habitual, y se puede cambiar en la propia fila antes de registrar. */
+function generarPendientes(){
+  const jugadas = new Set(state.movements.filter(m => m.tipo === 'jugada' && m.fecha).map(m => m.fecha));
+  const guardadas = new Set(state.pendientes.map(p => p.fecha));
+  const saltadas = new Set(state.saltadas);
+
+  const ultima = Array.from(jugadas).sort().pop();
+  const desde = new Date((ultima && ultima > hoy() ? ultima : hoy()) + 'T00:00:00');
+  desde.setDate(desde.getDate() + 1);
+  if(ultima && ultima < hoy()){                       // si va con retraso, arranca en el día siguiente al último apuntado
+    const u = new Date(ultima + 'T00:00:00'); u.setDate(u.getDate() + 1);
+    desde.setTime(u.getTime());
+  }
+  const hasta = new Date(hoy() + 'T00:00:00');
+  hasta.setMonth(hasta.getMonth() + MESES_VISTA);
+
+  const fuera = f => jugadas.has(f) || guardadas.has(f) || saltadas.has(f);
+  const out = [];
+
+  for(let d = new Date(desde); d <= hasta; d.setDate(d.getDate() + 1)){
+    const f = iso(d), mes = d.getMonth() + 1, dia = d.getDate();
+    let precio = null;
+    if(mes === 1 && dia === 6) precio = PRECIO_ESPECIAL;              // El Niño
+    else if(mes === 12 && dia === 22) precio = PRECIO_ESPECIAL;       // Navidad
+    else if(d.getDay() === 6){                                       // sábado
+      if(mes === 12 && dia > 15) continue;                           // la semana previa a Navidad no hay sorteo normal
+      if(mes === 1 && dia < 7) continue;                             // ni los primeros días de enero
+      precio = (mes === 7 && dia <= 7) ? PRECIO_ESPECIAL : PRECIO_NORMAL;
+    }
+    if(precio === null || fuera(f)) continue;
+    out.push({ fecha: f, precio, auto: true });
+  }
+  return out;
+}
+
+function pendientesOrdenadas(){
+  const saltadas = new Set(state.saltadas);
+  const jugadas = new Set(state.movements.filter(m => m.tipo === 'jugada' && m.fecha).map(m => m.fecha));
+  const guardadas = state.pendientes
+    .filter(p => !saltadas.has(p.fecha) && !jugadas.has(p.fecha))
+    .map(p => ({ fecha: p.fecha, precio: p.precio, auto: false }));
+  return guardadas.concat(generarPendientes()).sort((a,b) => a.fecha < b.fecha ? -1 : 1);
+}
+function proximaPendiente(){
+  const p = pendientesOrdenadas();
+  return p.length ? p[0].fecha : hoy();
+}
+
+/* reparto de un premio: devuelve {papa, abuelo} en positivo */
+function repartoPremio(importes){
+  let papa = 0, abuelo = 0;
+  for(const n of NUMEROS){
+    const amt = importes[n.id];
+    if(!amt) continue;
+    papa   += amt * n.reparto;
+    abuelo += amt * (1 - n.reparto);
+  }
+  return { papa: round2(papa), abuelo: round2(abuelo) };
+}
+/* nota legible: agrupa números que comparten importe -> "15 € en el 12 y el 97" */
+function notaPremio(importes){
+  const grupos = new Map();
+  for(const n of NUMEROS){
+    const amt = importes[n.id];
+    if(!amt) continue;
+    if(!grupos.has(amt)) grupos.set(amt, []);
+    grupos.get(amt).push('el ' + n.id);
+  }
+  const partes = [];
+  for(const [amt, ids] of grupos){
+    const lista = ids.length > 1 ? ids.slice(0,-1).join(', ') + ' y ' + ids[ids.length-1] : ids[0];
+    partes.push(fmtEUR(amt) + ' en ' + lista);
+  }
+  return partes.join(' · ');
+}
+
+/* ---------- vistas ---------- */
+
+function renderStats(){
+  const t = totales(state.movements);
+  const anyo = new Date().getFullYear().toString();
+  const tAnyo = totales(state.movements.filter(m => m.fecha && m.fecha.slice(0,4) === anyo));
+  const p = statusPill(t.papa), a = statusPill(t.abuelo);
+  return `
+  <div class="stats">
+    <div class="stat-card">
+      <div class="who">Papá</div>
+      <div class="amount mono">${fmtEUR(Math.abs(t.papa))}</div>
+      <span class="pill ${p.cls}">${p.label}</span>
+      <div class="sub">En ${anyo}: ${fmtEUR(tAnyo.papa)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="who">Abuelo y Malle</div>
+      <div class="amount mono">${fmtEUR(Math.abs(t.abuelo))}</div>
+      <span class="pill ${a.cls}">${a.label}</span>
+      <div class="sub">En ${anyo}: ${fmtEUR(tAnyo.abuelo)}</div>
+    </div>
+  </div>`;
+}
+
+function renderDeshacer(){
+  if(!state.deshacer) return '';
+  return `<div class="undo-bar">
+    <span class="undo-txt">Última acción: ${escapeHtml(state.deshacer.desc)}</span>
+    <button class="btn-sm ghost" data-undo="1">Deshacer</button>
+  </div>`;
+}
+
+/* ---------- jugado vs recuperado ---------- */
+
+/* Los apuntes viejos (2021-2024) muchas veces se guardaron solo como "Ajuste",
+   sin decir si fue premio o pago. Eso no se puede adivinar, así que se cuenta
+   aparte en vez de repartirlo a ojo. */
+function clasificarAjuste(nota){
+  const n = (nota || '').toLowerCase();
+  const premio = /premio|en todos|€\s*(?:en\s+)?(?:l\s+|el\s+)?\d|\ben\s+el\s+\d/.test(n);
+  const pago   = /abona|abono|pagado/.test(n);
+  if(premio && pago) return 'mixto';
+  if(premio) return 'premio';
+  if(pago) return 'pago';
+  return 'sin';
+}
+
+/* Precio del sorteo al que va pegado cada apunte: es la referencia contra la
+   que se mide si una cifra puede ser un premio. */
+function preciosAsociados(){
+  const ord = state.movements.slice().sort((a,b) => {
+    const fa = a.fecha || '', fb = b.fecha || '';
+    if(fa !== fb) return fa < fb ? -1 : 1;
+    return a.id - b.id;
+  });
+  const mapa = {};
+  let ultimo = null;
+  for(const x of ord){
+    if(x.tipo === 'jugada') ultimo = x.papa;
+    mapa[x.id] = ultimo;
+  }
+  return mapa;
+}
+
+/* Deduce si un apunte sin concepto fue premio o pago, solo con los importes.
+   La clave: un premio deja una firma que un abono no puede imitar. Lo que toca
+   en el 19012 y el 32534 se parte a medias y lo del 21997 va entero para Abuelo
+   y Malle, así que de las dos cifras se puede despejar cuánto tocó en cada sitio
+   — y eso tiene que ser un múltiplo entero de lo jugado esa semana.
+   Comprobado contra los apuntes que sí llevan concepto: acierta el 95%. */
+function deducirAjuste(x, precio){
+  const p = -x.papa, a = -x.abuelo;
+  if(x.papa > 0 || x.abuelo > 0)
+    return { tipo:'otro', conf:'alta', motivo:'suma deuda en vez de restarla, así que no es ni premio ni pago' };
+  if(!precio) return { tipo:'?', conf:'baja', motivo:'no consta el precio de ese sorteo' };
+  if(a < p - 1e-9)
+    return { tipo:'pago', conf:'media', motivo:'Abuelo y Malle reciben menos que Papá, y el reparto de premios no lo permite' };
+  const kx = (2*p) / precio, ky = (a - p) / precio;
+  const entero = k => Math.abs(k - Math.round(k)) < 1e-6;
+  if(!(entero(kx) && entero(ky)))
+    return { tipo:'pago', conf:'alta', motivo:'las cifras no son múltiplos de lo jugado esa semana' };
+  if(Math.max(kx, ky) > 6)
+    return { tipo:'pago', conf:'media', motivo:'como premio sería ' + Math.round(Math.max(kx,ky)) + '× lo jugado, más de lo visto nunca' };
+  if(p > 0)
+    return { tipo:'premio', conf:'alta', motivo:'Papá recibe exactamente la mitad: firma del reparto de premios' };
+  return { tipo:'premio', conf:'media', motivo:'encaja como premio del 21997, aunque un abono podría dar la misma cifra' };
+}
+
+/* Categoría final: manda el concepto escrito; si no lo hay, se deduce. */
+function categoriaAjuste(x, precio){
+  if(x.nota && x.nota.indexOf('Ajuste de cierre') === 0)
+    return { cat: 'otro', deducido: false };
+  if(x.papa > 0 || x.abuelo > 0)
+    return { cat: 'otro', deducido: false };
+  const c = clasificarAjuste(x.nota);
+  if(c !== 'sin') return { cat: c, deducido: false };
+  const d = deducirAjuste(x, precio);
+  if(d.tipo === '?') return { cat: 'sin', deducido: false, det: d };
+  return { cat: d.tipo, deducido: true, det: d };
+}
+
+function balance(){
+  const precios = preciosAsociados();
+  const jug = state.movements.filter(m => m.tipo === 'jugada');
+  const aj  = state.movements.filter(m => m.tipo === 'ajuste');
+  const suma = list => ({
+    papa: round2(list.reduce((s,x) => s + x.papa, 0)),
+    abuelo: round2(list.reduce((s,x) => s + x.abuelo, 0)),
+    n: list.length
+  });
+
+  const grupos = { premio:[], pago:[], mixto:[], otro:[], sin:[] };
+  let nDedPremio = 0, nDedPago = 0;
+  for(const x of aj){
+    const r = categoriaAjuste(x, precios[x.id]);
+    grupos[r.cat].push(x);
+    if(r.deducido && r.cat === 'premio') nDedPremio++;
+    if(r.deducido && r.cat === 'pago') nDedPago++;
+  }
+  const cats = {};
+  for(const c of ['premio','pago','mixto','otro','sin']) cats[c] = suma(grupos[c]);
+
+  const anios = new Set(state.movements.filter(m => m.fecha).map(m => m.fecha.slice(0,4)));
+  return { jugado: suma(jug), ajustes: suma(aj), cats, anios: anios.size,
+           nDedPremio, nDedPago, nSinConcepto: aj.filter(x => clasificarAjuste(x.nota) === 'sin').length };
+}
+
+/* ---------- cuenta con la administradora de lotería ----------
+   Los décimos quedan en custodia allí; ella cobra los tres números y descuenta
+   los premios, y se le paga por meses. Aquí solo entran esas dos cosas: lo que
+   cuestan los sorteos y lo que se ha ganado. Los abonos entre Papá y Abuelo y
+   Malle son cuenta aparte y no pintan nada en esto. */
+
+/* En una fila que junta premio y abono, saca el abono de la nota para quedarse
+   solo con el premio, que es lo único que la administradora descuenta. */
+function abonoDeNota(nota){
+  const n = (nota || '').toLowerCase().replace(/,/g, '.');
+  const mm = n.match(/abon[ao]s?\s*(?:de\s*)?(\d+(?:\.\d+)?)/);
+  return mm ? parseFloat(mm[1]) : null;
+}
+
+function nombreMes(clave){
+  const [y, mes] = clave.split('-');
+  const d = new Date(Number(y), Number(mes) - 1, 1);
+  const txt = new Intl.DateTimeFormat('es-ES', { month:'long', year:'numeric' }).format(d);
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
+function mesCorto(clave){
+  const [y, mes] = clave.split('-');
+  const d = new Date(Number(y), Number(mes) - 1, 1);
+  return new Intl.DateTimeFormat('es-ES', { month:'long' }).format(d);
+}
+
+function mesesLoteria(){
+  const precios = preciosAsociados();
+  const meses = {};
+  const tocar = k => (meses[k] = meses[k] || { clave:k, coste:0, premios:0, sorteos:0, aprox:false });
+
+  for(const x of state.movements){
+    if(!x.fecha) continue;
+    const k = x.fecha.slice(0,7);
+    if(x.tipo === 'jugada'){
+      const t = tocar(k);
+      t.coste += x.papa + x.abuelo;
+      t.sorteos++;
+      continue;
+    }
+    const r = categoriaAjuste(x, precios[x.id]);
+    const total = -(x.papa + x.abuelo);
+    if(r.cat === 'premio'){
+      tocar(k).premios += total;
+    } else if(r.cat === 'mixto'){
+      const ab = abonoDeNota(x.nota);
+      const t = tocar(k);
+      if(ab === null){ t.premios += total; t.aprox = true; }   // no se puede separar
+      else t.premios += round2(total - ab);
+    }
+  }
+  const pag = new Set(state.loteria.pagados);
+  return Object.values(meses)
+    .map(t => ({ ...t, coste: round2(t.coste), premios: round2(t.premios),
+                 neto: round2(t.coste - t.premios), pagado: pag.has(t.clave) }))
+    .sort((a,b) => a.clave < b.clave ? 1 : -1);
+}
+
+function renderLoteria(){
+  const meses = mesesLoteria();
+  if(!meses.length) return '';
+  const debe = meses.filter(m => !m.pagado);
+  const pendiente = round2(debe.reduce((s,m) => s + m.neto, 0));
+  const mesHoy = hoy().slice(0,7);
+  const esteMes = meses.find(m => m.clave === mesHoy);
+  // atrasado = solo lo de meses ya cerrados; los que se apuntan por adelantado no lo son
+  const atrasado = round2(debe.filter(m => m.clave < mesHoy).reduce((s,m) => s + m.neto, 0));
+
+  const mostrar = ui.verTodosMeses ? meses : meses.slice(0, Math.max(debe.length + 2, 4));
+  const filas = mostrar.map(m => `<tr class="${m.pagado ? 'pagado' : 'debe'}">
+      <td>${nombreMes(m.clave)}${m.aprox ? ' <span class="aprox" title="Este mes tiene un apunte que junta premio y abono sin decir cuánto era cada cosa: el premio es aproximado">≈</span>' : ''}</td>
+      <td>${m.sorteos}</td>
+      <td>${fmtEUR(m.coste)}</td>
+      <td>${m.premios ? '−' + fmtEUR(m.premios) : '—'}</td>
+      <td><strong>${fmtEUR(m.neto)}</strong></td>
+      <td>
+        <button class="mes-btn ${m.pagado ? 'ok' : 'debe'}" data-mes="${m.clave}">${m.pagado ? '✓ Pagado' : 'Marcar pagado'}</button>
+        ${!m.pagado ? '<button class="mes-bulk" data-mes-hasta="' + m.clave + '" title="Marca este mes y todos los anteriores">y anteriores</button>' : ''}
+      </td></tr>`).join('');
+
+  return `<div class="panel lot">
+    <h2>Cuenta con la lotería</h2>
+    <p class="hint">Lo que le debes a la administradora. Ella cobra los tres números y ya descuenta los premios, así que aquí solo entra eso: coste de los sorteos menos lo que tocó. Los abonos entre vosotros son cuenta aparte y no cuentan aquí. Ve marcando los meses según los pagas.</p>
+    <div class="lot-grid">
+      <div class="lot-tile ${pendiente > 0.01 ? 'deuda' : 'aldia'}">
+        <div class="lbl">${pendiente > 0.01 ? 'Le debes' : 'Al día'}</div>
+        <div class="val">${fmtEUR(pendiente)}</div>
+        <div class="foot">${debe.length ? debe.length + ' mes' + (debe.length===1?'':'es') + ' sin pagar' : 'nada pendiente'}</div>
+      </div>
+      <div class="lot-tile">
+        <div class="lbl">${esteMes ? 'Sorteos de ' + mesCorto(mesHoy) : 'Este mes'}</div>
+        <div class="val">${esteMes ? fmtEUR(esteMes.neto) : '—'}</div>
+        <div class="foot">${esteMes
+          ? '<strong>' + (esteMes.pagado ? 'ya pagado' : 'sin pagar') + '</strong> · '
+            + esteMes.sorteos + ' sorteos, ' + fmtEUR(esteMes.coste) + ' menos ' + fmtEUR(esteMes.premios) + ' de premios'
+          : 'sin sorteos aún'}</div>
+      </div>
+      <div class="lot-tile">
+        <div class="lbl">Atrasado</div>
+        <div class="val">${fmtEUR(atrasado)}</div>
+        <div class="foot">sin pagar de meses ya cerrados</div>
+      </div>
+    </div>
+    <div class="meses"><table>
+      <thead><tr><th>Mes</th><th>Sorteos</th><th>Coste</th><th>Premios</th><th>A pagar</th><th></th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table></div>
+    ${meses.length > mostrar.length || ui.verTodosMeses
+      ? `<div class="pend-more"><button class="linkish" data-toggle-meses="1">${ui.verTodosMeses ? 'Ver solo los últimos meses' : 'Ver los ' + meses.length + ' meses'}</button></div>`
+      : ''}
+  </div>`;
+}
+
+function renderJugadoRecuperado(){
+  const b = balance();
+  const totalJugado = round2(b.jugado.papa + b.jugado.abuelo);
+  const totalDesc = round2(b.ajustes.papa + b.ajustes.abuelo);
+  const saldo = round2(totalJugado + totalDesc);
+  const premios = round2(-(b.cats.premio.papa + b.cats.premio.abuelo));
+  const pctVuelto = totalJugado > 0 ? Math.round(100 * premios / totalJugado) : 0;
+
+  const fila = (nombre, extra, c, clase) => `<tr class="${clase||''}">
+      <td>${nombre} <span class="cnt">${c.n}${extra ? ' · ' + extra : ''}</span></td>
+      <td>${fmtEUR(c.papa)}</td><td>${fmtEUR(c.abuelo)}</td>
+      <td>${fmtEUR(round2(c.papa + c.abuelo))}</td></tr>`;
+
+  return `<div class="panel">
+    <h2>Jugado y recuperado</h2>
+    <p class="hint">Todo lo que ha pasado por la lotería en estos ${b.anios} años, entre los tres.</p>
+    <div class="bal-grid">
+      <div class="bal-tile">
+        <div class="lbl">Jugado</div>
+        <div class="val">${fmtEUR(totalJugado)}</div>
+        <div class="foot">${b.jugado.n} sorteos</div>
+      </div>
+      <div class="bal-tile">
+        <div class="lbl">Vuelto en premios</div>
+        <div class="val">${fmtEUR(premios)}</div>
+        <div class="foot">${pctVuelto} € de cada 100 jugados</div>
+      </div>
+      <div class="bal-tile sal">
+        <div class="lbl">Pendiente</div>
+        <div class="val">${fmtEUR(saldo)}</div>
+        <div class="foot">Papá ${fmtEUR(round2(b.jugado.papa + b.ajustes.papa))} · A y M ${fmtEUR(round2(b.jugado.abuelo + b.ajustes.abuelo))}</div>
+      </div>
+    </div>
+    <div class="desglose"><table>
+      <thead><tr><th>Concepto</th><th>Papá</th><th>Abuelo y Malle</th><th>Total</th></tr></thead>
+      <tbody>
+        ${fila('Sorteos jugados', '', b.jugado)}
+        ${fila('Premios', b.nDedPremio ? b.nDedPremio + ' deducidos' : '', b.cats.premio)}
+        ${fila('Pagos y abonos', b.nDedPago ? b.nDedPago + ' deducidos' : '', b.cats.pago)}
+        ${fila('Premio y pago juntos', '', b.cats.mixto)}
+        ${b.cats.otro.n ? fila('Otros y correcciones', '', b.cats.otro, 'dudosa') : ''}
+        ${b.cats.sin.n ? fila('Sin poder deducir', '', b.cats.sin, 'dudosa') : ''}
+      </tbody>
+    </table></div>
+    <div class="aviso">${b.nSinConcepto} apuntes antiguos solo dicen «Ajuste». En vez de dejarlos fuera se deducen por sus cifras: lo que toca en el 19012 y el 32534 se parte a medias y lo del 21997 va entero, así que de las dos cantidades se despeja cuánto tocó en cada número, y eso tiene que ser múltiplo de lo jugado esa semana. Un abono rara vez cuadra así. Contrastado con los apuntes que sí llevan concepto, el método acierta el 95%.</div>
+  </div>`;
+}
+
+function splitTexto(precio){
+  const p = parseFloat(precio);
+  if(!isFinite(p) || p <= 0) return 'pon el precio';
+  return 'Papá ' + fmtEUR(p) + ' · Abuelo y Malle ' + fmtEUR(p*2);
+}
+
+function renderPendientes(){
+  const pend = pendientesOrdenadas();
+  if(!pend.length) return '';
+  const h = hoy();
+  const vencidas = pend.filter(p => p.fecha <= h);
+  const mostrar = ui.verTodasPend ? pend : pend.slice(0, Math.max(vencidas.length, 3));
+  const rows = mostrar.map(p => {
+    const due = p.fecha <= h;
+    return `<div class="pend-row ${due?'due':''}">
+      <span class="pend-date">${fmtFechaCorta(p.fecha)} ${p.fecha.slice(0,4)}</span>
+      <span class="pend-precio">
+        <input type="number" step="0.5" min="0" inputmode="decimal" value="${p.precio}"
+               data-pend-precio="${p.fecha}" aria-label="Precio del sorteo del ${p.fecha}"> €
+        <span class="pend-split" data-split="${p.fecha}">${splitTexto(p.precio)}</span>
+        ${p.auto ? '<span class="pend-tag" title="Propuesto por el calendario habitual: comprueba el precio">previsto</span>' : ''}
+      </span>
+      <span class="pend-actions">
+        <button class="btn-sm" data-reg-pend="${p.fecha}">Registrar</button>
+        <button class="btn-sm ghost" data-skip-pend="${p.fecha}" title="Quitar de la lista sin apuntarlo">Saltar</button>
+      </span>
+    </div>`;
+  }).join('');
+  const resto = pend.length - mostrar.length;
+  return `
+  <div class="panel pend">
+    <div class="pend-head">
+      <h2>Sorteos por apuntar</h2>
+      ${vencidas.length ? `<span class="badge">${vencidas.length} ya jugado${vencidas.length===1?'':'s'}</span>` : ''}
+    </div>
+    <p class="hint">Los sábados que vienen y los especiales de siempre (6 de enero, primer sábado de julio y 22 de diciembre), hasta ${MESES_VISTA} meses vista. Cambia el precio en la fila si esa semana no es de ${fmtEUR(PRECIO_NORMAL)} y pulsa Registrar.</p>
+    <div class="pend-list">${rows}</div>
+    ${resto > 0 || ui.verTodasPend
+      ? `<div class="pend-more"><button class="linkish" data-toggle-pend="1">${ui.verTodasPend ? 'Ver solo las próximas' : 'Ver las ' + pend.length + ' pendientes'}</button></div>`
+      : ''}
+  </div>`;
+}
+
+function renderTabs(){
+  const tabs = [['sorteo','Sorteo'],['premio','Premio'],['abono','Abono o pago'],['otro','Otro ajuste']];
+  return '<div class="tabs">' + tabs.map(([v,l]) =>
+    `<button class="tab ${ui.tab===v?'active':''}" data-tab="${v}">${l}</button>`).join('') + '</div>';
+}
+
+function formSorteo(){
+  const ed = ui.editTipo === 'jugada' ? state.movements.find(m => m.id === ui.editId) : null;
+  const fecha = ed ? ed.fecha : proximaPendiente();
+  const precio = ed ? ed.papa : '';
+  return `
+  <p class="hint">Papá paga el precio una vez; Abuelo y Malle, el doble (media parte del 19012 y del 32534 para Papá, la otra media más el 21997 entero para ellos).</p>
+  ${ed ? '<div class="editnote">Editando el sorteo del ' + fmtFecha(ed.fecha) + '</div>' : ''}
+  <form class="entry-form" id="form-sorteo">
+    <input type="hidden" name="editId" value="${ed ? ed.id : ''}">
+    <div class="row2">
+      <div class="field">
+        <label for="sorteo-fecha">Fecha del sorteo</label>
+        <input type="date" id="sorteo-fecha" name="fecha" required value="${fecha}">
+      </div>
+      <div class="field">
+        <label for="sorteo-precio">Precio de la jugada (€)</label>
+        <input type="number" id="sorteo-precio" name="precio" step="0.5" min="0" inputmode="decimal" required value="${precio}" data-preview="sorteo">
+      </div>
+    </div>
+    <div class="quickrow">
+      <span class="chip" data-quickprice="6">6 €</span>
+      <span class="chip" data-quickprice="12">12 €</span>
+      <span class="chip" data-quickprice="15">15 €</span>
+      <span class="chip" data-quickprice="20">20 €</span>
+    </div>
+    <div class="preview" id="sorteo-preview">${previewSorteoHTML(precio)}</div>
+    <button class="btn" type="submit">${ed ? 'Guardar cambios' : 'Apuntar sorteo'}</button>
+    ${ed ? '<button class="btn secondary" type="button" data-cancel-edit="1">Cancelar edición</button>' : ''}
+  </form>`;
+}
+function previewSorteoHTML(precio){
+  const p = parseFloat(precio);
+  if(!isFinite(p) || p <= 0) return '<span class="pv-none">Pon el precio y verás aquí lo que suma a cada uno.</span>';
+  return `<div class="pv-line"><span>Papá</span><span class="pv-val">${fmtEUR(p)}</span></div>
+          <div class="pv-line"><span>Abuelo y Malle</span><span class="pv-val">${fmtEUR(p*2)}</span></div>`;
+}
+
+function formPremio(){
+  const fecha = ui.premioFecha || ultimaJugada();
+  const filas = NUMEROS.map(n => `
+    <div class="num-row" data-numrow="${n.id}">
+      <div>
+        <div class="num-id">${n.numero} <span style="opacity:.6">· el ${n.id}</span></div>
+        <div class="num-meta">${n.nota}</div>
+      </div>
+      <input type="number" step="0.5" min="0" inputmode="decimal" placeholder="0 €"
+             name="premio-${n.id}" id="premio-${n.id}" data-preview="premio" aria-label="Premio del ${n.numero}">
+    </div>`).join('');
+  return `
+  <p class="hint">Pon cuánto tocó en cada número y reparte solo: el 19012 y el 32534 van a medias, el 21997 es entero de Abuelo y Malle. Deja en blanco los que no tocaron.</p>
+  <form class="entry-form" id="form-premio">
+    <div class="field">
+      <label for="premio-fecha">Fecha del sorteo</label>
+      <input type="date" id="premio-fecha" name="fecha" required value="${fecha}">
+    </div>
+    <div class="nums">${filas}</div>
+    <div class="preview" id="premio-preview">${previewPremioHTML({})}</div>
+    <button class="btn" type="submit">Apuntar premio</button>
+  </form>`;
+}
+function previewPremioHTML(importes){
+  const t = repartoPremio(importes);
+  if(!t.papa && !t.abuelo) return '<span class="pv-none">Se descontará de lo que debe cada uno.</span>';
+  return `<div class="pv-line"><span>Papá</span><span class="pv-val neg">−${fmtEUR(t.papa)}</span></div>
+          <div class="pv-line"><span>Abuelo y Malle</span><span class="pv-val neg">−${fmtEUR(t.abuelo)}</span></div>`;
+}
+
+function formAbono(){
+  return `
+  <p class="hint">Dinero que entregan para bajar la deuda. Se descuenta de lo que debe quien paga.</p>
+  <form class="entry-form" id="form-abono">
+    <div class="row2">
+      <div class="field">
+        <label for="abono-fecha">Fecha</label>
+        <input type="date" id="abono-fecha" name="fecha" required value="${hoy()}">
+      </div>
+      <div class="field">
+        <label for="abono-quien">Quién paga</label>
+        <select id="abono-quien" name="quien">
+          <option value="abuelo">Abuelo y Malle</option>
+          <option value="papa">Papá</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="abono-importe">Importe entregado (€)</label>
+      <input type="number" id="abono-importe" name="importe" step="0.5" min="0" inputmode="decimal" required>
+    </div>
+    <div class="quickrow">
+      <span class="chip" data-quickabono="20">20 €</span>
+      <span class="chip" data-quickabono="30">30 €</span>
+      <span class="chip" data-quickabono="50">50 €</span>
+      <span class="chip" data-quickabono="100">100 €</span>
+    </div>
+    <button class="btn" type="submit">Apuntar abono</button>
+  </form>`;
+}
+
+function formOtro(){
+  const ed = ui.editTipo === 'ajuste' ? state.movements.find(m => m.id === ui.editId) : null;
+  return `
+  <p class="hint">Para lo que no encaja arriba: correcciones, devoluciones en metálico, saldos traídos de otro sitio. Negativo resta de lo que debe.</p>
+  ${ed ? '<div class="editnote">Editando: ' + escapeHtml(ed.nota) + '</div>' : ''}
+  <form class="entry-form" id="form-otro">
+    <input type="hidden" name="editId" value="${ed ? ed.id : ''}">
+    <div class="field">
+      <label for="otro-fecha">Fecha</label>
+      <input type="date" id="otro-fecha" name="fecha" required value="${ed ? ed.fecha : hoy()}">
+    </div>
+    <div class="field">
+      <label for="otro-concepto">Concepto</label>
+      <input type="text" id="otro-concepto" name="concepto" placeholder="Devolución en metálico, corrección…" value="${ed ? escapeHtml(ed.nota) : ''}">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="otro-papa">Importe Papá (€)</label>
+        <input type="number" id="otro-papa" name="importePapa" step="0.5" inputmode="decimal" value="${ed ? ed.papa : 0}">
+      </div>
+      <div class="field">
+        <label for="otro-abuelo">Importe Abuelo y Malle (€)</label>
+        <input type="number" id="otro-abuelo" name="importeAbuelo" step="0.5" inputmode="decimal" value="${ed ? ed.abuelo : 0}">
+      </div>
+    </div>
+    <button class="btn" type="submit">${ed ? 'Guardar cambios' : 'Apuntar ajuste'}</button>
+    ${ed ? '<button class="btn secondary" type="button" data-cancel-edit="1">Cancelar edición</button>' : ''}
+  </form>`;
+}
+
+function renderEntrada(){
+  let cuerpo = '';
+  if(ui.tab === 'sorteo') cuerpo = formSorteo();
+  else if(ui.tab === 'premio') cuerpo = formPremio();
+  else if(ui.tab === 'abono') cuerpo = formAbono();
+  else cuerpo = formOtro();
+  return `<div class="panel">
+    <h2>Apuntar</h2>
+    ${renderTabs()}
+    ${cuerpo}
+    <div class="status ${ui.flash ? 'ok' : ''}" id="save-status">${escapeHtml(ui.flash)}</div>
+  </div>`;
+}
+
+/* ---------- descarga ---------- */
+
+function csvMovimientos(){
+  const sep = ';';                       // el Excel español separa por punto y coma
+  const esc = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+  const num = n => String(n).replace('.', ',');   // coma decimal
+  const filas = state.movements.slice().sort((a,b) => {
+    const fa = a.fecha || '', fb = b.fecha || '';
+    if(fa !== fb) return fa < fb ? -1 : 1;
+    return a.id - b.id;
+  });
+  let saldoP = 0, saldoA = 0;
+  const lineas = [['Fecha','Tipo','Concepto','Papá','Abuelo y Malle','Saldo Papá','Saldo Abuelo y Malle'].join(sep)];
+  for(const m of filas){
+    saldoP = round2(saldoP + m.papa);
+    saldoA = round2(saldoA + m.abuelo);
+    const f = m.fecha ? m.fecha.split('-').reverse().join('/') : '';
+    lineas.push([esc(f), esc(m.tipo === 'jugada' ? 'Sorteo' : 'Ajuste'), esc(m.nota),
+                 num(m.papa), num(m.abuelo), num(saldoP), num(saldoA)].join(sep));
+  }
+  return '﻿' + lineas.join('\r\n');   // BOM para que Excel lea bien los acentos
+}
+
+function nombreArchivo(ext){
+  return 'loteria-abuelo-' + hoy() + '.' + ext;
+}
+
+async function descargar(tipo){
+  const el = document.getElementById('dl-status');
+  const decir = (txt, cls) => { if(el){ el.className = 'dl-status ' + (cls||''); el.textContent = txt; } };
+  let datos, intentos;
+  if(tipo === 'csv'){
+    datos = csvMovimientos();
+    intentos = [nombreArchivo('csv'), nombreArchivo('txt')];   // csv puede no estar habilitado; txt siempre lo está
+  } else if(tipo === 'html'){
+    datos = page();
+    intentos = [nombreArchivo('html'), nombreArchivo('txt')];
+  } else {
+    datos = JSON.stringify({ movements: state.movements, pendientes: state.pendientes, saltadas: state.saltadas, loteria: state.loteria }, null, 1);
+    intentos = [nombreArchivo('json')];
+  }
+
+  let dl = null;
+  try{
+    if(typeof window.claude !== 'undefined' && typeof window.claude.use === 'function'){
+      dl = await window.claude.use('downloads');
+    }
+  } catch(e){ dl = null; }
+  if(!dl){ planB(tipo, datos, 'Aquí no se puede guardar archivos directamente.'); return; }
+
+  decir('Preparando la descarga…');
+
+  for(let i = 0; i < intentos.length; i++){
+    try{
+      await dl.save({ filename: intentos[i], data: datos });
+      const cayoEnTxt = intentos[i].endsWith('.txt') && tipo !== 'txt';
+      if(cayoEnTxt && tipo === 'html'){
+        decir('Descargado como ' + intentos[i] + ' — renómbralo a .html para abrirlo en el navegador.', 'ok');
+      } else if(cayoEnTxt){
+        decir('Descargado como ' + intentos[i] + ' — renómbralo a .csv para abrirlo en Excel.', 'ok');
+      } else {
+        decir('Descargado: ' + intentos[i], 'ok');
+      }
+      return;
+    } catch(err){
+      const code = err && err.code;
+      if(code === 'extension_not_enabled' && i < intentos.length - 1) continue;   // probar el siguiente formato
+      if(code === 'declined'){ decir('Descarga cancelada.'); return; }
+      if(code === 'rate_limited'){ decir('Espera un momento y vuelve a intentarlo.', 'err'); return; }
+      console.error(err);
+      planB(tipo, datos, 'La descarga no funcionó aquí (' + (code || 'error') + ').');
+      return;
+    }
+  }
+}
+
+/* Plan B para cuando el móvil no deja guardar archivos: se enseña el contenido
+   para copiarlo y pegarlo donde sea. Se inyecta en el DOM a mano, fuera del
+   render, para que este texto no acabe dentro de la página publicada. */
+const NOMBRES = { csv:'la hoja para Excel', json:'la copia de seguridad', html:'la página entera' };
+
+function planB(tipo, datos, motivo){
+  const el = document.getElementById('dl-status');
+  if(el){ el.className = 'dl-status err'; el.textContent = motivo; }
+
+  const viejo = document.getElementById('export-box');
+  if(viejo) viejo.remove();
+
+  const caja = document.createElement('div');
+  caja.id = 'export-box';
+  const grande = datos.length > 200000;
+  caja.innerHTML =
+    '<p>Copia ' + (NOMBRES[tipo] || 'el contenido') + ' y pégala donde quieras: un correo, Notas, Google Drive…'
+    + (grande ? ' Ojo, son ' + Math.round(datos.length/1024) + ' KB: en el móvil va lento y quizá te resulte más cómodo desde el ordenador.' : '')
+    + '</p>'
+    + '<textarea readonly id="export-txt"></textarea>'
+    + '<div class="exp-acts">'
+    + '<button class="btn-sm" data-copiar="1">Copiar todo</button>'
+    + '<button class="btn-sm ghost" data-cerrar-exp="1">Cerrar</button>'
+    + '</div>';
+  const panel = el ? el.parentNode : document.getElementById('app');
+  panel.appendChild(caja);
+  document.getElementById('export-txt').value = datos;
+  caja.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* El copiado va en su propio toque: tras un await el navegador ya no
+   considera que haya gesto del usuario y bloquea el portapapeles. */
+async function copiarExport(){
+  const ta = document.getElementById('export-txt');
+  const el = document.getElementById('dl-status');
+  if(!ta) return;
+  let ok = false;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(ta.value);
+      ok = true;
+    }
+  } catch(e){ ok = false; }
+  if(!ok){
+    try{
+      ta.removeAttribute('readonly');
+      ta.focus(); ta.setSelectionRange(0, ta.value.length);
+      ok = document.execCommand('copy');
+      ta.setAttribute('readonly','readonly');
+    } catch(e){ ok = false; }
+  }
+  if(el){
+    el.className = 'dl-status ' + (ok ? 'ok' : 'err');
+    el.textContent = ok
+      ? 'Copiado. Pégalo donde quieras.'
+      : 'No se pudo copiar solo: mantén pulsado el texto, «Seleccionar todo» y copia.';
+  }
+  if(!ok){ ta.focus(); try{ ta.setSelectionRange(0, ta.value.length); }catch(e){} }
+}
+
+function renderDescargas(){
+  return `<div class="panel">
+    <h2>Descargar</h2>
+    <p class="hint">La página guarda la página entera con tus datos dentro: se abre en cualquier navegador, también sin internet, aunque en esa copia los cambios ya no se guardan. El CSV se abre en Excel y la copia de seguridad guarda los datos en bruto por si hay que restaurarlos. Si el móvil no deja guardar archivos, te ofrece el contenido para copiar y pegar.</p>
+    <div class="dl-row">
+      <button class="btn" style="margin-top:0" data-dl="html">Descargar la página</button>
+      <button class="btn secondary" style="margin-top:0" data-dl="csv">Para Excel (CSV)</button>
+      <button class="btn secondary" style="margin-top:0" data-dl="json">Copia de seguridad</button>
+    </div>
+    <div class="dl-status" id="dl-status"></div>
+  </div>`;
+}
+
+function renderResumenAnual(){
+  const yrs = years();
+  if(!yrs.length) return '';
+  const filas = yrs.map(y => {
+    const t = totales(state.movements.filter(m => m.fecha && m.fecha.slice(0,4) === y));
+    const n = state.movements.filter(m => m.fecha && m.fecha.slice(0,4) === y).length;
+    return `<tr><td>${y}</td><td>${n}</td><td>${fmtEUR(t.papa)}</td><td>${fmtEUR(t.abuelo)}</td></tr>`;
+  }).join('');
+  const tot = totales(state.movements);
+  return `<div class="panel">
+    <h2>Resumen por año</h2>
+    <p class="hint">Lo que sumó o restó cada año al saldo. Un año en negativo es un año en el que se pagó y tocó más de lo que se jugó.</p>
+    <div class="years"><table>
+      <thead><tr><th>Año</th><th>Movs.</th><th>Papá</th><th>Abuelo y Malle</th></tr></thead>
+      <tbody>${filas}</tbody>
+      <tfoot><tr style="border-top:2px solid var(--border)">
+        <td style="padding-top:.5rem"><strong>Saldo</strong></td><td></td>
+        <td style="padding-top:.5rem"><strong>${fmtEUR(tot.papa)}</strong></td>
+        <td style="padding-top:.5rem"><strong>${fmtEUR(tot.abuelo)}</strong></td>
+      </tr></tfoot>
+    </table></div>
+  </div>`;
+}
+
+function renderHistorial(){
+  const yrs = years();
+  const yearChips = ['todos', ...yrs].map(y =>
+    `<span class="filter-chip ${ui.year===y?'active':''}" data-year-filter="${y}">${y==='todos'?'Todos':y}</span>`).join('');
+  const tipoChips = [['todos','Todos'],['jugada','Sorteos'],['ajuste','Premios y ajustes']].map(([v,l]) =>
+    `<span class="filter-chip ${ui.tipo===v?'active':''}" data-tipo-filter="${v}">${l}</span>`).join('');
+
+  const precios = preciosAsociados();
+  let list = state.movements.filter(m => {
+    if(ui.year !== 'todos' && (!m.fecha || m.fecha.slice(0,4) !== ui.year)) return false;
+    if(ui.tipo !== 'todos' && m.tipo !== ui.tipo) return false;
+    return true;
+  }).sort((a,b) => {
+    const fa = a.fecha || '0000-00-00', fb = b.fecha || '0000-00-00';
+    if(fa !== fb) return fa < fb ? 1 : -1;
+    return b.id - a.id;
+  });
+
+  const rows = list.map(m => {
+    const flag = m.nota && m.nota.indexOf('Ajuste de cierre') === 0;
+    let deduc = '';
+    if(m.tipo === 'ajuste' && !flag && clasificarAjuste(m.nota) === 'sin'){
+      const d = deducirAjuste(m, precios[m.id]);
+      if(d.tipo === 'premio' || d.tipo === 'pago'){
+        deduc = ' <span class="ded" title="' + escapeHtml(d.motivo) + '">'
+              + d.tipo + (d.conf === 'media' ? '?' : '') + '</span>';
+      }
+    }
+    return `<tr>
+      <td>${fmtFecha(m.fecha)}</td>
+      <td>${flag ? '<span class="flag" title="Revisar">⚠</span>' : ''}${escapeHtml(m.nota)}${deduc}</td>
+      <td class="num ${m.papa < 0 ? 'neg':'pos'}">${fmtEUR(m.papa)}</td>
+      <td class="num ${m.abuelo < 0 ? 'neg':'pos'}">${fmtEUR(m.abuelo)}</td>
+      <td class="rowactions">
+        <button class="iconbtn" data-edit="${m.id}">Editar</button>
+        <button class="iconbtn" data-del="${m.id}">Eliminar</button>
+      </td></tr>`;
+  }).join('');
+
+  return `<div class="panel">
+    <h2>Historial</h2>
+    <p class="hint">${list.length} movimiento${list.length===1?'':'s'}</p>
+    <div class="filters"><div class="grp">${yearChips}</div><div class="grp">${tipoChips}</div></div>
+    <div class="tablewrap"><table class="hist">
+      <thead><tr><th>Fecha</th><th>Concepto</th><th>Papá</th><th>Abuelo y Malle</th><th></th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" class="empty">Sin movimientos con este filtro</td></tr>'}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function renderBody(){
+  return `
+  <div class="wrap">
+    <header class="top">
+      <p class="eyebrow">Cuentas de la lotería</p>
+      <h1>Lotería del Abuelo</h1>
+      <p>Números fijos: 19012 · 32534 · 21997. Lo que debe Papá y lo que deben Abuelo y Malle, semana a semana.</p>
+    </header>
+    ${renderStats()}
+    ${renderDeshacer()}
+    ${renderPendientes()}
+    ${renderLoteria()}
+    ${renderEntrada()}
+    ${renderJugadoRecuperado()}
+    ${renderResumenAnual()}
+    ${renderHistorial()}
+    ${renderDescargas()}
+    <footer class="note">Los datos se guardan en esta misma página y se abre igual desde el móvil o el ordenador. El movimiento marcado con ⚠ es una diferencia del cierre 2025→2026 que venía de la hoja de Excel y sigue sin explicar: revísalo cuando puedas.</footer>
+  </div>`;
+}
+
+function page(){
+  const css = document.getElementById('app-style').textContent;
+  const datos = JSON.stringify({ movements: state.movements, pendientes: state.pendientes, saltadas: state.saltadas, deshacer: state.deshacer, loteria: state.loteria });
+  return '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+    + '<title>Lotería del Abuelo</title>\n'
+    + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">\n'
+    + '<style id="app-style">' + css + '<\/style>\n</head>\n<body>\n<div id="app">'
+    + renderBody()
+    + '</div>\n<script id="app-data" type="application/json">' + datos + '<\/script>\n'
+    + '<script>' + LOGIC_SRC + '<\/script>\n</body>\n</html>';
+}
+
+function renderApp(){ document.getElementById('app').innerHTML = renderBody(); }
+
+/* ---------- dónde se guarda ----------
+   Dos modos, y la página elige sola:
+   · «pagina»: corre publicada en claude.ai y se guarda a sí misma. Se
+     sincroniza: lo que apuntas en el móvil está luego en el ordenador.
+   · «local»: corre en cualquier otro sitio (GitHub Pages, un servidor propio,
+     el archivo en el móvil) y guarda en el almacenamiento del navegador. No
+     necesita a nadie, pero los datos viven solo en ESE aparato.
+   Si no se puede ninguna de las dos, se dice bien claro en vez de perder datos
+   en silencio. */
+const CLAVE_LOCAL = 'loteria-abuelo-v1';
+let modoGuardado = 'desconocido';
+let capPagina = null;
+
+function datosActuales(){
+  return { movements: state.movements, pendientes: state.pendientes,
+           saltadas: state.saltadas, deshacer: state.deshacer, loteria: state.loteria };
+}
+function guardarLocal(){
+  try{ localStorage.setItem(CLAVE_LOCAL, JSON.stringify(datosActuales())); return true; }
+  catch(e){ return false; }
+}
+function leerLocal(){
+  try{ const t = localStorage.getItem(CLAVE_LOCAL); return t ? JSON.parse(t) : null; }
+  catch(e){ return null; }
+}
+
+async function persist(msg){
+  ui.flash = msg || '';
+  renderApp();
+  const el = document.getElementById('save-status');
+  const decir = (t, ok) => { if(el){ el.className = 'status ' + (ok ? 'ok' : ''); el.textContent = t; } };
+
+  if(modoGuardado === 'local'){
+    const ok = guardarLocal();
+    decir((msg ? msg + ' · ' : '') + (ok ? 'guardado en este dispositivo' : 'NO se pudo guardar: el navegador no deja'), ok);
+    return;
+  }
+  if(modoGuardado !== 'pagina'){
+    decir((msg ? msg + ' · ' : '') + 'aquí no se guarda: se perderá al cerrar', false);
+    return;
+  }
+  try{
+    await capPagina.publish(page());
+  } catch(err){
+    const code = err && err.code;
+    if(code === 'conflict') return;
+    if(code === 'not_writer' || code === 'not_granted'){
+      decir('Vista de solo lectura: aquí no se puede guardar.', false);
+    } else {
+      decir('No se pudo guardar (' + (code || 'error') + '). Inténtalo otra vez.', false);
+    }
+    console.error(err);
+  }
+}
+
+/* ---------- eventos ---------- */
+
+function leerImportesPremio(){
+  const imp = {};
+  for(const n of NUMEROS){
+    const el = document.getElementById('premio-' + n.id);
+    const v = el ? parseFloat(el.value) : NaN;
+    imp[n.id] = isFinite(v) && v > 0 ? v : 0;
+    if(el){
+      const row = el.closest('.num-row');
+      if(row) row.classList.toggle('on', imp[n.id] > 0);
+    }
+  }
+  return imp;
+}
+
+function onInput(e){
+  const t = e.target;
+  if(t.dataset && t.dataset.preview === 'premio'){
+    const el = document.getElementById('premio-preview');
+    if(el) el.innerHTML = previewPremioHTML(leerImportesPremio());
+  }
+  if(t.dataset && t.dataset.preview === 'sorteo'){
+    const el = document.getElementById('sorteo-preview');
+    if(el) el.innerHTML = previewSorteoHTML(t.value);
+  }
+  if(t.dataset && t.dataset.pendPrecio){
+    const el = document.querySelector('[data-split="' + t.dataset.pendPrecio + '"]');
+    if(el) el.textContent = splitTexto(t.value);
+  }
+}
+
+function onClick(e){
+  if(e.target.closest('[data-copiar]')){ copiarExport(); return; }
+  if(e.target.closest('[data-cerrar-exp]')){
+    const c = document.getElementById('export-box'); if(c) c.remove();
+    const st = document.getElementById('dl-status'); if(st){ st.className='dl-status'; st.textContent=''; }
+    return;
+  }
+
+  const un = e.target.closest('[data-undo]');
+  if(un && state.deshacer){
+    const d = state.deshacer;
+    state.movements = d.movements;
+    state.pendientes = d.pendientes;
+    state.saltadas = d.saltadas;
+    if(d.loteria) state.loteria = d.loteria;
+    state.deshacer = null;
+    persist('Deshecho: ' + d.desc);
+    return;
+  }
+
+  const dl = e.target.closest('[data-dl]');
+  if(dl){ descargar(dl.dataset.dl); return; }
+
+  const tab = e.target.closest('[data-tab]');
+  if(tab){ ui.tab = tab.dataset.tab; ui.editId = null; ui.editTipo = null; ui.flash=''; renderApp(); return; }
+
+  const qp = e.target.closest('[data-quickprice]');
+  if(qp){
+    const inp = document.getElementById('sorteo-precio');
+    inp.value = qp.dataset.quickprice;
+    document.getElementById('sorteo-preview').innerHTML = previewSorteoHTML(inp.value);
+    return;
+  }
+  const qa = e.target.closest('[data-quickabono]');
+  if(qa){ document.getElementById('abono-importe').value = qa.dataset.quickabono; return; }
+
+  const reg = e.target.closest('[data-reg-pend]');
+  if(reg){
+    const fecha = reg.dataset.regPend;
+    const inp = document.querySelector('[data-pend-precio="' + fecha + '"]');
+    const precio = inp ? parseFloat(inp.value) : NaN;
+    if(!isFinite(precio) || precio <= 0){ alert('Pon el precio de ese sorteo antes de registrarlo.'); return; }
+    if(!confirmarDuplicado(fecha, null)) return;
+    guardarDeshacer('apuntado el sorteo del ' + fmtFecha(fecha));
+    state.movements.push({ id: nextId(), fecha, tipo:'jugada', nota:'Jugada semanal',
+                           papa: round2(precio), abuelo: round2(precio*2) });
+    state.pendientes = state.pendientes.filter(x => x.fecha !== fecha);
+    ui.tab = 'premio'; ui.premioFecha = fecha;
+    persist('Sorteo del ' + fmtFecha(fecha) + ' apuntado. ¿Tocó algo?');
+    return;
+  }
+  const skip = e.target.closest('[data-skip-pend]');
+  if(skip){
+    const fecha = skip.dataset.skipPend;
+    guardarDeshacer('saltado el sorteo del ' + fmtFecha(fecha));
+    state.pendientes = state.pendientes.filter(x => x.fecha !== fecha);
+    if(state.saltadas.indexOf(fecha) === -1) state.saltadas.push(fecha);
+    persist('Sorteo del ' + fmtFecha(fecha) + ' quitado de la lista.');
+    return;
+  }
+  const tg = e.target.closest('[data-toggle-pend]');
+  if(tg){ ui.verTodasPend = !ui.verTodasPend; renderApp(); return; }
+
+  const tm = e.target.closest('[data-toggle-meses]');
+  if(tm){ ui.verTodosMeses = !ui.verTodosMeses; renderApp(); return; }
+
+  const mes = e.target.closest('[data-mes]');
+  if(mes){
+    const k = mes.dataset.mes;
+    const pagado = state.loteria.pagados.indexOf(k) !== -1;
+    guardarDeshacer((pagado ? 'desmarcado' : 'marcado') + ' como pagado ' + nombreMes(k));
+    state.loteria.pagados = pagado
+      ? state.loteria.pagados.filter(x => x !== k)
+      : state.loteria.pagados.concat([k]);
+    persist(nombreMes(k) + (pagado ? ' vuelve a estar pendiente.' : ' marcado como pagado.'));
+    return;
+  }
+
+  const hasta = e.target.closest('[data-mes-hasta]');
+  if(hasta){
+    const k = hasta.dataset.mesHasta;
+    const nuevos = mesesLoteria().filter(m => m.clave <= k && !m.pagado).map(m => m.clave);
+    if(!nuevos.length) return;
+    guardarDeshacer('marcados como pagados ' + nuevos.length + ' meses hasta ' + nombreMes(k));
+    state.loteria.pagados = state.loteria.pagados.concat(nuevos);
+    persist(nuevos.length + ' mes' + (nuevos.length===1?'':'es') + ' marcado' + (nuevos.length===1?'':'s') + ' como pagado' + (nuevos.length===1?'':'s') + '.');
+    return;
+  }
+
+  const yf = e.target.closest('[data-year-filter]');
+  if(yf){ ui.year = yf.dataset.yearFilter; renderApp(); return; }
+  const tf = e.target.closest('[data-tipo-filter]');
+  if(tf){ ui.tipo = tf.dataset.tipoFilter; renderApp(); return; }
+
+  const ed = e.target.closest('[data-edit]');
+  if(ed){
+    const m = state.movements.find(x => x.id === Number(ed.dataset.edit));
+    if(m){
+      ui.editId = m.id; ui.editTipo = m.tipo;
+      ui.tab = m.tipo === 'jugada' ? 'sorteo' : 'otro';
+      ui.flash = '';
+      renderApp();
+      const f = document.getElementById(m.tipo === 'jugada' ? 'form-sorteo' : 'form-otro');
+      if(f) f.scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+    return;
+  }
+  if(e.target.closest('[data-cancel-edit]')){ ui.editId=null; ui.editTipo=null; renderApp(); return; }
+
+  const del = e.target.closest('[data-del]');
+  if(del){
+    const id = Number(del.dataset.del);
+    if(confirm('¿Eliminar este movimiento?')){
+      const m = state.movements.find(x => x.id === id);
+      guardarDeshacer('eliminado «' + (m ? m.nota : '') + '» del ' + (m ? fmtFecha(m.fecha) : ''));
+      state.movements = state.movements.filter(x => x.id !== id);
+      if(ui.editId === id){ ui.editId=null; ui.editTipo=null; }
+      persist('Movimiento eliminado.');
+    }
+    return;
+  }
+}
+
+function onSubmit(e){
+  const f = e.target;
+
+  if(f.id === 'form-sorteo'){
+    e.preventDefault();
+    const fecha = f.fecha.value, precio = parseFloat(f.precio.value);
+    const editId = f.editId.value ? Number(f.editId.value) : null;
+    if(!fecha || !isFinite(precio) || precio <= 0){ alert('Pon una fecha y un precio válidos.'); return; }
+    if(!confirmarDuplicado(fecha, editId)) return;
+    guardarDeshacer((editId ? 'editado' : 'apuntado') + ' el sorteo del ' + fmtFecha(fecha));
+    if(editId){
+      const m = state.movements.find(x => x.id === editId);
+      if(m){ m.fecha = fecha; m.papa = round2(precio); m.abuelo = round2(precio*2); }
+    } else {
+      state.movements.push({ id: nextId(), fecha, tipo:'jugada', nota:'Jugada semanal',
+                             papa: round2(precio), abuelo: round2(precio*2) });
+      state.pendientes = state.pendientes.filter(x => x.fecha !== fecha);
+      ui.premioFecha = fecha;
+    }
+    ui.editId=null; ui.editTipo=null;
+    persist(editId ? 'Sorteo actualizado.' : 'Sorteo apuntado.');
+    return;
+  }
+
+  if(f.id === 'form-premio'){
+    e.preventDefault();
+    const fecha = f.fecha.value;
+    const imp = leerImportesPremio();
+    const t = repartoPremio(imp);
+    if(!fecha){ alert('Pon la fecha del sorteo.'); return; }
+    if(!t.papa && !t.abuelo){ alert('Pon el importe de al menos un número.'); return; }
+    guardarDeshacer('apuntado el premio del ' + fmtFecha(fecha));
+    state.movements.push({ id: nextId(), fecha, tipo:'ajuste', nota: notaPremio(imp),
+                           papa: round2(-t.papa), abuelo: round2(-t.abuelo) });
+    ui.premioFecha = null;
+    persist('Premio apuntado: −' + fmtEUR(t.papa) + ' Papá, −' + fmtEUR(t.abuelo) + ' Abuelo y Malle.');
+    return;
+  }
+
+  if(f.id === 'form-abono'){
+    e.preventDefault();
+    const fecha = f.fecha.value, importe = parseFloat(f.importe.value), quien = f.quien.value;
+    if(!fecha || !isFinite(importe) || importe <= 0){ alert('Pon una fecha y un importe válidos.'); return; }
+    const esPapa = quien === 'papa';
+    guardarDeshacer('apuntado el abono de ' + fmtEUR(importe));
+    state.movements.push({
+      id: nextId(), fecha, tipo:'ajuste',
+      nota: 'Abona ' + fmtEUR(importe) + (esPapa ? ' (Papá)' : ''),
+      papa: esPapa ? round2(-importe) : 0,
+      abuelo: esPapa ? 0 : round2(-importe)
+    });
+    persist('Abono de ' + fmtEUR(importe) + ' apuntado.');
+    return;
+  }
+
+  if(f.id === 'form-otro'){
+    e.preventDefault();
+    const fecha = f.fecha.value;
+    const concepto = f.concepto.value.trim() || 'Ajuste';
+    const ip = round2(parseFloat(f.importePapa.value) || 0);
+    const ia = round2(parseFloat(f.importeAbuelo.value) || 0);
+    const editId = f.editId.value ? Number(f.editId.value) : null;
+    if(!fecha){ alert('Pon una fecha.'); return; }
+    guardarDeshacer((editId ? 'editado' : 'apuntado') + ' el ajuste «' + concepto + '»');
+    if(editId){
+      const m = state.movements.find(x => x.id === editId);
+      if(m){ m.fecha=fecha; m.nota=concepto; m.papa=ip; m.abuelo=ia; }
+    } else {
+      state.movements.push({ id: nextId(), fecha, tipo:'ajuste', nota: concepto, papa: ip, abuelo: ia });
+    }
+    ui.editId=null; ui.editTipo=null;
+    persist(editId ? 'Ajuste actualizado.' : 'Ajuste apuntado.');
+    return;
+  }
+}
+
+/* Decide dónde se guarda y lo dice NADA MÁS abrir, no cuando ya has apuntado
+   media tarde. */
+function mostrarModo(){
+  const viejo = document.getElementById('modo-aviso');
+  if(viejo) viejo.remove();
+  if(modoGuardado === 'pagina') return;          // todo bien, no hace falta avisar
+
+  const av = document.createElement('div');
+  av.id = 'modo-aviso';
+  if(modoGuardado === 'local'){
+    av.className = 'local';
+    av.innerHTML = '<span class="ca-txt"><strong>Guardado en este dispositivo.</strong> '
+      + 'Lo que apuntes queda aquí, en este navegador, y funciona sin conexión. '
+      + 'No se comparte con otros aparatos: haz una copia de seguridad de vez en cuando desde abajo.</span>';
+  } else {
+    av.className = 'malo';
+    av.innerHTML = '<span class="ca-txt"><strong>Aquí no se guarda nada.</strong> '
+      + 'Puedes mirarlo y hasta apuntar, pero al cerrar se pierde. '
+      + 'Guarda este archivo en el móvil y ábrelo desde ahí, o usa la página de Lotería del Abuelo.</span>';
+  }
+  document.body.insertBefore(av, document.getElementById('app'));
+}
+
+async function arrancar(){
+  renderApp();
+  const app = document.getElementById('app');
+  app.addEventListener('click', onClick);
+  app.addEventListener('submit', onSubmit);
+  app.addEventListener('input', onInput);
+
+  // ¿corre publicada y puede guardarse a sí misma?
+  try{
+    if(typeof window.claude !== 'undefined' && typeof window.claude.use === 'function'){
+      capPagina = await window.claude.use('artifact');
+    }
+  } catch(e){ capPagina = null; }
+
+  if(capPagina){
+    modoGuardado = 'pagina';
+    mostrarModo();
+    return;
+  }
+
+  // fuera de claude.ai: manda lo que haya guardado el navegador
+  const guardado = leerLocal();
+  if(guardado && Array.isArray(guardado.movements) && guardado.movements.length){
+    state.movements = guardado.movements;
+    state.pendientes = guardado.pendientes || [];
+    state.saltadas = guardado.saltadas || [];
+    state.deshacer = guardado.deshacer || null;
+    state.loteria = guardado.loteria || { pagados: [] };
+  }
+  modoGuardado = guardarLocal() ? 'local' : 'ninguno';
+  renderApp();
+  mostrarModo();
+}
+arrancar();
+</script>
+</body>
+</html>
