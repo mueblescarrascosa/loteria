@@ -339,6 +339,10 @@ td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;t
   color:var(--ink-soft);border:1px dashed var(--border);border-radius:99px;
   padding:.05rem .38rem;margin-left:.35rem;white-space:nowrap;cursor:help;
 }
+.ded.c-premio{border-style:solid;border-color:#2f7d4f;color:#2f7d4f;}
+.ded.c-pago{border-style:solid;border-color:#8a5a1e;color:#8a5a1e;}
+.ded.c-mixto{border-style:solid;border-color:#5a6b8a;color:#5a6b8a;}
+.ded.c-otro{border-style:dotted;}
 .rowactions{display:flex;gap:.4rem;white-space:nowrap;}
 .iconbtn{
   border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:.8rem;
@@ -1297,18 +1301,40 @@ function renderResumenAnual(){
   </div>`;
 }
 
+/* Cómo se llama cada ajuste en cristiano. Un premio baja la deuda porque tocó
+   algo; un abono la baja porque alguien puso dinero. No es lo mismo y conviene
+   verlo de un vistazo. */
+function etiquetaAjuste(m, precio){
+  if(m.nota && m.nota.indexOf('Ajuste de cierre') === 0)
+    return { txt:'sin explicar', cls:'c-otro', tit:'Diferencia que venía de la hoja de Excel y nadie ha explicado' };
+  const r = categoriaAjuste(m, precio);
+  const dudoso = r.deducido ? ' (deducido)' : '';
+  const motivo = (r.det && r.det.motivo) ? ' · ' + r.det.motivo : '';
+  if(r.cat === 'premio') return { txt:'premio' + (r.deducido?'?':''), cls:'c-premio', tit:'Premio de la Lotería'+dudoso+motivo };
+  if(r.cat === 'pago')   return { txt:'abono'  + (r.deducido?'?':''), cls:'c-pago',   tit:'Dinero entregado a cuenta'+dudoso+motivo };
+  if(r.cat === 'mixto')  return { txt:'premio + abono', cls:'c-mixto', tit:'La nota junta las dos cosas sin decir cuánto es cada una' };
+  if(r.cat === 'otro')   return { txt:'otro', cls:'c-otro', tit:'Ni premio ni abono: suma deuda en vez de restarla' };
+  return { txt:'sin clasificar', cls:'c-otro', tit:(r.det && r.det.motivo) ? r.det.motivo : 'No se ha podido saber qué es' };
+}
+
 function renderHistorial(){
   const yrs = years();
   const yearChips = ['todos', ...yrs].map(y =>
     `<span class="filter-chip ${ui.year===y?'active':''}" data-year-filter="${y}">${y==='todos'?'Todos':y}</span>`).join('');
-  const tipoChips = [['todos','Todos'],['jugada','Sorteos'],['ajuste','Premios y ajustes']].map(([v,l]) =>
+  const tipoChips = [['todos','Todos'],['jugada','Sorteos'],['premio','Premios'],['pago','Abonos'],['otro','Otros']].map(([v,l]) =>
     `<span class="filter-chip ${ui.tipo===v?'active':''}" data-tipo-filter="${v}">${l}</span>`).join('');
 
   const precios = preciosAsociados();
   let list = state.movements.filter(m => {
     if(ui.year !== 'todos' && (!m.fecha || m.fecha.slice(0,4) !== ui.year)) return false;
-    if(ui.tipo !== 'todos' && m.tipo !== ui.tipo) return false;
-    return true;
+    if(ui.tipo === 'todos') return true;
+    if(ui.tipo === 'jugada') return m.tipo === 'jugada';
+    if(ui.tipo === 'ajuste') return m.tipo === 'ajuste';     // filtros viejos guardados
+    if(m.tipo !== 'ajuste') return false;
+    const c = categoriaAjuste(m, precios[m.id]).cat;
+    if(ui.tipo === 'premio') return c === 'premio' || c === 'mixto';
+    if(ui.tipo === 'pago')   return c === 'pago'   || c === 'mixto';
+    return c === 'otro' || c === 'sin';
   }).sort((a,b) => {
     const fa = a.fecha || '0000-00-00', fb = b.fecha || '0000-00-00';
     if(fa !== fb) return fa < fb ? 1 : -1;
@@ -1318,12 +1344,9 @@ function renderHistorial(){
   const rows = list.map(m => {
     const flag = m.nota && m.nota.indexOf('Ajuste de cierre') === 0;
     let deduc = '';
-    if(m.tipo === 'ajuste' && !flag && clasificarAjuste(m.nota) === 'sin'){
-      const d = deducirAjuste(m, precios[m.id]);
-      if(d.tipo === 'premio' || d.tipo === 'pago'){
-        deduc = ' <span class="ded" title="' + escapeHtml(d.motivo) + '">'
-              + d.tipo + (d.conf === 'media' ? '?' : '') + '</span>';
-      }
+    if(m.tipo === 'ajuste'){
+      const et = etiquetaAjuste(m, precios[m.id]);
+      deduc = ' <span class="ded ' + et.cls + '" title="' + escapeHtml(et.tit) + '">' + et.txt + '</span>';
     }
     return `<tr>
       <td>${fmtFecha(m.fecha)}</td>
