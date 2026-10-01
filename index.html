@@ -495,8 +495,18 @@ function generarPendientes(){
 function pendientesOrdenadas(){
   const saltadas = new Set(state.saltadas);
   const jugadas = new Set(state.movements.filter(m => m.tipo === 'jugada' && m.fecha).map(m => m.fecha));
+
+  /* Las pendientes guardadas que caen dentro del tramo del calendario oficial
+     pero no se corresponden con ningún sorteo son restos de cuando la app se
+     inventaba las fechas (un sábado 10 de octubre que no existe, por ejemplo).
+     Fuera de ese tramo no hay con qué comparar, así que se respetan. */
+  const fechasCal = new Set(calendario.map(c => c.fecha));
+  const primera = calendario.length ? calendario[0].fecha : null;
+  const ultima  = calendario.length ? calendario[calendario.length - 1].fecha : null;
+  const real = f => !fechasCal.size || f < primera || f > ultima || fechasCal.has(f);
+
   const guardadas = state.pendientes
-    .filter(p => !saltadas.has(p.fecha) && !jugadas.has(p.fecha))
+    .filter(p => !saltadas.has(p.fecha) && !jugadas.has(p.fecha) && real(p.fecha))
     .map(p => ({ fecha: p.fecha, precio: p.precio, auto: false }));
   return guardadas.concat(generarPendientes()).sort((a,b) => a.fecha < b.fecha ? -1 : 1);
 }
