@@ -1996,6 +1996,17 @@ async function arrancar(){
   renderApp();
   mostrarModo();
 }
+
+/* El service worker es lo que le dice a Chrome que esto es una aplicación de
+   verdad y no una página cualquiera: sin él, el botón de Instalar no aparece
+   en Android. De paso deja la app abrible sin cobertura. Solo tiene sentido
+   servido por http(s): desde un archivo descargado no hay nada que registrar. */
+if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(e){ console.error('sw:', e); });
+  });
+}
+
 arrancar();
 </script>
 </body>

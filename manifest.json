@@ -2,7 +2,7 @@
   "name": "Lotería del Abuelo",
   "short_name": "Lotería",
   "description": "Las cuentas de la lotería entre Papá y Abuelo y Malle",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -28,5 +28,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "/loteria/"
 }
