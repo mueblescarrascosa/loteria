@@ -451,28 +451,31 @@ function iso(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-/* Propone los sorteos que vienen: todos los sábados, más los tres especiales
-   del año (6 de enero, primer sábado de julio y 22 de diciembre). Los precios
-   de los especiales son los de siempre; el resto sale a 6 € porque es el
-   habitual, y se puede cambiar en la propia fila antes de registrar. */
+/* Propone los sorteos que vienen. Lo que diga el calendario de SELAE manda;
+   solo si no hay forma de consultarlo se cae al cálculo de siempre (sábados
+   más los tres especiales), que es una aproximación y puede fallar la fecha. */
 function generarPendientes(){
   const jugadas = new Set(state.movements.filter(m => m.tipo === 'jugada' && m.fecha).map(m => m.fecha));
   const guardadas = new Set(state.pendientes.map(p => p.fecha));
   const saltadas = new Set(state.saltadas);
+  const fuera = f => jugadas.has(f) || guardadas.has(f) || saltadas.has(f);
 
   const ultima = Array.from(jugadas).sort().pop();
-  const desde = new Date((ultima && ultima > hoy() ? ultima : hoy()) + 'T00:00:00');
-  desde.setDate(desde.getDate() + 1);
-  if(ultima && ultima < hoy()){                       // si va con retraso, arranca en el día siguiente al último apuntado
-    const u = new Date(ultima + 'T00:00:00'); u.setDate(u.getDate() + 1);
-    desde.setTime(u.getTime());
-  }
+  const base = new Date((ultima || hoy()) + 'T00:00:00');
+  base.setDate(base.getDate() + 1);                   // si va con retraso, arranca tras el último apuntado
+  const desde = base;
   const hasta = new Date(hoy() + 'T00:00:00');
   hasta.setMonth(hasta.getMonth() + MESES_VISTA);
 
-  const fuera = f => jugadas.has(f) || guardadas.has(f) || saltadas.has(f);
-  const out = [];
+  if(calendario.length){
+    const dF = iso(desde), hF = iso(hasta);
+    return calendario
+      .filter(c => c.fecha >= dF && c.fecha <= hF && !fuera(c.fecha))
+      .map(c => ({ fecha: c.fecha, precio: Number(c.precio) || PRECIO_NORMAL,
+                   auto: true, nombre: c.nombre || '', extra: !!c.extra }));
+  }
 
+  const out = [];
   for(let d = new Date(desde); d <= hasta; d.setDate(d.getDate() + 1)){
     const f = iso(d), mes = d.getMonth() + 1, dia = d.getDate();
     let precio = null;
@@ -716,6 +719,53 @@ function mesesLoteria(){
     .sort((a,b) => a.clave < b.clave ? 1 : -1);
 }
 
+/* Lo que cuesta cada sorteo menos lo que tocó, fecha a fecha. Es la misma
+   cuenta que mesesLoteria() pero sin agrupar por mes, que hace falta para
+   arrancar el saldo a mitad de mes. */
+function netoPorFecha(){
+  const precios = preciosAsociados();
+  const porFecha = {};
+  const tocar = f => (porFecha[f] = porFecha[f] || { coste:0, premios:0 });
+  for(const x of state.movements){
+    if(!x.fecha) continue;
+    if(x.tipo === 'jugada'){ tocar(x.fecha).coste += x.papa + x.abuelo; continue; }
+    const r = categoriaAjuste(x, precios[x.id]);
+    const total = -(x.papa + x.abuelo);
+    if(r.cat === 'premio'){ tocar(x.fecha).premios += total; }
+    else if(r.cat === 'mixto'){
+      const ab = abonoDeNota(x.nota);
+      tocar(x.fecha).premios += (ab === null) ? total : round2(total - ab);
+    }
+  }
+  return porFecha;
+}
+
+/* El saldo con la administradora. Con ella no se va mes a mes: se le deja
+   dinero a cuenta y cada sorteo descuenta su coste y suma lo que haya tocado.
+   El ancla es el último día en que se cuadró con ella de viva voz. */
+function saldoLoteria(){
+  const a = state.loteria && state.loteria.saldo;
+  if(!a || !a.fecha) return null;
+
+  const porFecha = netoPorFecha();
+  let saldo = Number(a.importe) || 0;
+  for(const f of Object.keys(porFecha).sort()){
+    if(f <= a.fecha) continue;                    // el ancla ya lleva ese sorteo dentro
+    saldo = round2(saldo - round2(porFecha[f].coste - porFecha[f].premios));
+  }
+
+  // hasta cuándo da de sí, contando solo lo que cuestan los sorteos que vienen:
+  // los premios futuros no se pueden saber, así que no se cuentan
+  let queda = saldo, hasta = null, resto = saldo;
+  for(const p of pendientesOrdenadas()){
+    const coste = round2(p.precio * NUMEROS.length);
+    if(queda - coste < 0) break;
+    queda = round2(queda - coste);
+    hasta = p.fecha; resto = queda;
+  }
+  return { saldo, desde: a.fecha, hasta, resto };
+}
+
 function renderLoteria(){
   const meses = mesesLoteria();
   if(!meses.length) return '';
@@ -740,13 +790,25 @@ function renderLoteria(){
 
   return `<div class="panel lot">
     <h2>Cuenta con la lotería</h2>
-    <p class="hint">Lo que le debes a la administradora. Ella cobra los tres números y ya descuenta los premios, así que aquí solo entra eso: coste de los sorteos menos lo que tocó. Los abonos entre vosotros son cuenta aparte y no cuentan aquí. Ve marcando los meses según los pagas.</p>
+    <p class="hint">Tu cuenta con la administradora. Ella cobra los tres números y ya descuenta los premios, así que aquí solo entra eso: coste de los sorteos menos lo que tocó. Los abonos entre vosotros son cuenta aparte y no cuentan aquí. El saldo baja solo con cada sorteo que apuntas; cuando pases por la administración y cuadres con ella, pulsa <strong>cuadrar</strong> y pon la cifra que te diga.</p>
     <div class="lot-grid">
-      <div class="lot-tile ${pendiente > 0.01 ? 'deuda' : 'aldia'}">
-        <div class="lbl">${pendiente > 0.01 ? 'Le debes' : 'Al día'}</div>
-        <div class="val">${fmtEUR(pendiente)}</div>
-        <div class="foot">${debe.length ? debe.length + ' mes' + (debe.length===1?'':'es') + ' sin pagar' : 'nada pendiente'}</div>
-      </div>
+      ${(() => {
+        const sl = saldoLoteria();
+        if(!sl) return `<div class="lot-tile ${pendiente > 0.01 ? 'deuda' : 'aldia'}">
+            <div class="lbl">${pendiente > 0.01 ? 'Le debes' : 'Al día'}</div>
+            <div class="val">${fmtEUR(pendiente)}</div>
+            <div class="foot">${debe.length ? debe.length + ' mes' + (debe.length===1?'':'es') + ' sin pagar' : 'nada pendiente'}</div>
+          </div>`;
+        const favor = sl.saldo >= -0.01;
+        return `<div class="lot-tile ${favor ? 'aldia' : 'deuda'}">
+          <div class="lbl">${favor ? 'A tu favor' : 'Le debes'}</div>
+          <div class="val">${fmtEUR(Math.abs(sl.saldo))}</div>
+          <div class="foot">${favor && sl.hasta
+              ? 'te llega hasta el ' + fmtFechaCorta(sl.hasta) + ', y sobran ' + fmtEUR(sl.resto)
+              : favor ? 'no cubre el próximo sorteo' : 'hay que ponerse al día'}
+            · <button class="linkish" data-cuadrar="1">cuadrar</button></div>
+        </div>`;
+      })()}
       <div class="lot-tile">
         <div class="lbl">${esteMes ? 'Sorteos de ' + mesCorto(mesHoy) : 'Este mes'}</div>
         <div class="val">${esteMes ? fmtEUR(esteMes.neto) : '—'}</div>
@@ -877,7 +939,9 @@ function renderPendientes(){
         <input type="number" step="0.5" min="0" inputmode="decimal" value="${p.precio}"
                data-pend-precio="${p.fecha}" aria-label="Precio del sorteo del ${p.fecha}"> €
         <span class="pend-split" data-split="${p.fecha}">${splitTexto(p.precio)}</span>
-        ${p.auto ? '<span class="pend-tag" title="Propuesto por el calendario habitual: comprueba el precio">previsto</span>' : ''}
+        ${p.extra && p.nombre
+            ? '<span class="pend-tag" title="' + p.nombre + '">' + p.nombre.replace(/^SORTEO (EXTRAORDINARIO|ESPECIAL)\s*/i,'').replace(/["\u201c\u201d]/g,'').toLowerCase() + '</span>'
+            : p.auto ? '<span class="pend-tag" title="Propuesto por el calendario: comprueba el precio">previsto</span>' : ''}
       </span>
       <span class="pend-actions">
         <button class="btn-sm" data-reg-pend="${p.fecha}">Registrar</button>
@@ -892,7 +956,9 @@ function renderPendientes(){
       <h2>Sorteos por apuntar</h2>
       ${vencidas.length ? `<span class="badge">${vencidas.length} ya jugado${vencidas.length===1?'':'s'}</span>` : ''}
     </div>
-    <p class="hint">Los sábados que vienen y los especiales de siempre (6 de enero, primer sábado de julio y 22 de diciembre), hasta ${MESES_VISTA} meses vista. Cambia el precio en la fila si esa semana no es de ${fmtEUR(PRECIO_NORMAL)} y pulsa Registrar.</p>
+    <p class="hint">${calendario.length
+      ? 'Los sorteos pares que vienen, según el calendario oficial de la Lotería Nacional, hasta ' + MESES_VISTA + ' meses vista. El precio del décimo viene puesto; si no cuadra con lo que te cobró, cámbialo en la fila antes de Registrar.'
+      : 'Los sábados que vienen y los especiales de siempre, hasta ' + MESES_VISTA + ' meses vista. <strong>Sin conexión con el servidor las fechas son una estimación</strong>: compruébalas. Cambia el precio en la fila si hace falta y pulsa Registrar.'}</p>
     <div class="pend-list">${rows}</div>
     ${resto > 0 || ui.verTodasPend
       ? `<div class="pend-more"><button class="linkish" data-toggle-pend="1">${ui.verTodasPend ? 'Ver solo las próximas' : 'Ver las ' + pend.length + ' pendientes'}</button></div>`
@@ -1325,6 +1391,15 @@ let versionRemota = null;
 let fallo = '';
 let resultados = [];          // lo que dice la Lotería Nacional, traído del servidor
 let resultadosPedidos = false;
+const CLAVE_CAL = 'loteria-calendario-v1';
+/* El calendario oficial de SELAE. Se guarda aparte del resto porque no es un
+   dato de las cuentas: es una copia de lo que publica la Lotería, y así sigue
+   estando disponible sin conexión sin ensuciar el estado que se sincroniza. */
+let calendario = (function(){
+  try{ const c = JSON.parse(localStorage.getItem(CLAVE_CAL) || '[]'); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+})();
+let calendarioPedido = false;
 
 function datosActuales(){
   return { movements: state.movements, pendientes: state.pendientes,
@@ -1401,6 +1476,28 @@ async function sbResultados(){
       renderApp();
     }
   } catch(e){ console.error('resultados:', e); }
+}
+
+/* Los sorteos que vienen, tal y como los publica SELAE. Antes esto se calculaba
+   a ojo —todos los sábados más tres fijos— y se equivocaba: el Extraordinario
+   del Día de la Hispanidad de 2026 cae en lunes, y había semanas sin sorteo. */
+async function sbCalendario(){
+  if(modoGuardado !== 'supabase') return;
+  try{
+    const d = new Date(hoy() + 'T00:00:00');
+    d.setMonth(d.getMonth() + MESES_VISTA);
+    const r = await fetch(SB_URL + '/rpc/calendario_sorteos', {
+      method: 'POST', headers: sbCabeceras(),
+      body: JSON.stringify({ desde: hoy(), hasta: iso(d) })
+    });
+    if(!r.ok) return;
+    const filas = await r.json();
+    if(Array.isArray(filas) && filas.length){
+      calendario = filas;
+      try{ localStorage.setItem(CLAVE_CAL, JSON.stringify(filas)); }catch(e){}
+      renderApp();
+    }
+  } catch(e){ console.error('calendario:', e); }
 }
 
 /* Qué falta por apuntar de cada sorteo que la Lotería ya ha publicado. */
@@ -1633,6 +1730,19 @@ function onClick(e){
   const tm = e.target.closest('[data-toggle-meses]');
   if(tm){ ui.verTodosMeses = !ui.verTodosMeses; renderApp(); return; }
 
+  if(e.target.closest('[data-cuadrar]')){
+    const sl = saldoLoteria();
+    const txt = prompt('¿Qué saldo tienes con la administradora hoy?\n\nEn positivo si es a tu favor, en negativo si le debes.',
+                       sl ? String(sl.saldo) : '0');
+    if(txt === null) return;
+    const n = Number(String(txt).replace(',', '.'));
+    if(!isFinite(n)){ decir('Eso no es un número.'); return; }
+    guardarDeshacer('cuadrado el saldo con la administradora');
+    state.loteria.saldo = { fecha: hoy(), importe: round2(n) };
+    persist('Saldo cuadrado en ' + fmtEUR(n) + '.');
+    return;
+  }
+
   const mes = e.target.closest('[data-mes]');
   if(mes){
     const k = mes.dataset.mes;
@@ -1819,6 +1929,7 @@ async function arrancar(){
       guardarLocal();        // respaldo por si otro día el servidor no responde
       renderApp(); mostrarModo();
       if(!resultadosPedidos){ resultadosPedidos = true; sbResultados(); }
+      if(!calendarioPedido){ calendarioPedido = true; sbCalendario(); }
       return;
     } catch(e){
       fallo = e.message;
