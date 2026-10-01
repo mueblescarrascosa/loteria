@@ -1,10 +1,11 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lotería del Abuelo</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTMiIGZpbGw9IiM4YTVhMWUiLz4KICA8cGF0aCBkPSJNOCAxOGg0OHYxMGE2IDYgMCAwIDAgMCAxMnYxMEg4VjQwYTYgNiAwIDAgMCAwLTEyVjE4eiIgZmlsbD0iI2Y0ZThkMiIvPgogIDxyZWN0IHg9IjE3IiB5PSIyNyIgd2lkdGg9IjMwIiBoZWlnaHQ9IjQuNSIgcng9IjIuMjUiIGZpbGw9IiM4YTVhMWUiLz4KICA8cmVjdCB4PSIxNyIgeT0iMzUiIHdpZHRoPSIxOSIgaGVpZ2h0PSI0LjUiIHJ4PSIyLjI1IiBmaWxsPSIjOGE1YTFlIi8+Cjwvc3ZnPgo="><link rel="apple-touch-icon" href="data:image/png;base64,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"><meta name="theme-color" content="#8a5a1e"><meta name="apple-mobile-web-app-title" content="Lotería">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTMiIGZpbGw9IiM4YTVhMWUiLz4KICA8cGF0aCBkPSJNOCAxOGg0OHYxMGE2IDYgMCAwIDAgMCAxMnYxMEg4VjQwYTYgNiAwIDAgMCAwLTEyVjE4eiIgZmlsbD0iI2Y0ZThkMiIvPgogIDxyZWN0IHg9IjE3IiB5PSIyNyIgd2lkdGg9IjMwIiBoZWlnaHQ9IjQuNSIgcng9IjIuMjUiIGZpbGw9IiM4YTVhMWUiLz4KICA8cmVjdCB4PSIxNyIgeT0iMzUiIHdpZHRoPSIxOSIgaGVpZ2h0PSI0LjUiIHJ4PSIyLjI1IiBmaWxsPSIjOGE1YTFlIi8+Cjwvc3ZnPgo="><link rel="apple-touch-icon" href="data:image/png;base64,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"><meta name="theme-color" content="#8a5a1e"><link rel="manifest" href="manifest.json"><meta name="apple-mobile-web-app-title" content="Lotería">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style id="app-style">
 :root{
@@ -362,7 +363,7 @@ const LOGIC_SRC = document.currentScript.textContent;
    no es secreta, pero quien la tenga puede leer y escribir la
    tabla, así que protege el acceso con las políticas RLS.
    ============================================================ */
-const ICONOS_JS = '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTMiIGZpbGw9IiM4YTVhMWUiLz4KICA8cGF0aCBkPSJNOCAxOGg0OHYxMGE2IDYgMCAwIDAgMCAxMnYxMEg4VjQwYTYgNiAwIDAgMCAwLTEyVjE4eiIgZmlsbD0iI2Y0ZThkMiIvPgogIDxyZWN0IHg9IjE3IiB5PSIyNyIgd2lkdGg9IjMwIiBoZWlnaHQ9IjQuNSIgcng9IjIuMjUiIGZpbGw9IiM4YTVhMWUiLz4KICA8cmVjdCB4PSIxNyIgeT0iMzUiIHdpZHRoPSIxOSIgaGVpZ2h0PSI0LjUiIHJ4PSIyLjI1IiBmaWxsPSIjOGE1YTFlIi8+Cjwvc3ZnPgo="><link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAANPUlEQVR4nOzdeXRU1QHH8d99MwkkISQCQkhCEkQB2VSqIKitFKzUrfUoux6t9VjtaW3LqigVT91YbJX+U5UjbWUHe0TAtkdasYpB6saisimELCSsZgeSebf3DoYGDGQmmeW+6+9zTsgweQ+SmW9u7lvmxY84mD222zXSEXlCIkv9NVMKmaVvS4EsAZEN8gwJWaSeu2L13BULKYLvHekWSykKpi4tfAcxJhADvx+VnVWf4Nyovvwb1F9HqP82BfQtIKvVH+tcV65NDOCNiSuKihFlUQt69visS6V0Rqv/4EYIMQBEUm6RwFoh3OVTFxd/giiIeNBzJ+T0Cbh4XEDepkKOyU8A8hgppWpjpS8QeHTSsuKdiKCIBffMqMwckeB/Qn22E9Q82AFRM1TX9WrMe1m68vFpSwtLEAGtDnruuMxOAeGfobYO7lfjcSKIwiVlrRRiXqDuxLPTV5QeRCu0Kug547KGuHBWqu+yTBC1khqxSxy4t09ZUpyPFmrx1GDO2OzxLnzrGTNFim5JN6XbQguFPUIvHwXfXn/OU2rNqSCKErU3ZNbUxfseFsGboQsr6Fm3dEoV7ZL/huC+ZKJok6tkVe2d014/VBnqGiEHPeuOzF4i4H9NrdEbRLEisd0RdSMnL95fEMriIQWtR2akJH2g5jg9QRRjas6xI0lUDXpw0ZGK5pZtdqNQ6ujbJa1gzBQvatTtVStTlsoQBmBfcwukjMt+TghnAojiSB2su2hD/7S267aWrzvXcucMetbYbvcLx/kdiAyghuerh/dNLVm3reKjcyzTtGfGZg51HP96dTMBROaoU9UOm7po34amPtjkHHrmKCSqmBeDMZN5EqSLhfN+iDZNfbDJoJP9ORPVu1wQGUgI5NWm5zzQ5MfOvOPrgydF6mZ7EJnrgKyqufDMgy7fHKHbJT8Cxkzm6/x1q6c5bYTW5zQ7fv9OdW8bEBlO7Zc+5kNd78ZHEU8boZ0E32zGTF6hRuO2LvyzzrjvpDljswdLx9kIIo8RMjC04RzqUyO06zi3gsiDXOH7UcPtxlOOH4PIm061Gwx67rjM3voEEBB5kG736bEZefp2MGg1seboTJ7mIGHkyfdBciSIvMw5Oe0QJ0/eTz7ESxCQl0mJE0lO1fl+J7ntdyRjJo/TA/LxQPJAv74KKIgsoFt2IEUGiGygWlYbhS6DJku4GX41+cgDkQ1Uy47aOswDkQ0k1AgNzqHJEkJk+NVhw3QQ2SA4QvP8Z7KFatkPIoswaLIKgyarMGiyCoMmqzBosgqDJqswaLIKgyarMGiyCoMmqzBoskrUgk49rwtSO3QG0ZkqjxxA5dEyREPUgu49aDiuuL7Fv7KZLPbffy4OvkUDpxxkFQZNVmHQZBUGTVZh0GQVBk1WYdBkFQZNVmHQZBUGTVZh0GQVBk1WYdBkFQZNVmHQZBUGTVZh0GQVBk1WYdBkFQZNVmHQZBUGTVZh0GQVBk1WsSro7Zv+hYLPN+FA4a7g1Xno7PSVrTrnXIjciwcFLwpkCyuCPlK6D+uXz0Pp3u2g0OhLcem3LzZvwGcb/45rRz+IDhk58DoHUVJ19KAKrQA1lUcRTYH6Orz5ymzG3Ar6sXtz4ZzgYxlNNRVHgk3oNqJFzB6fIxEDGXkXo3u/K9F9wBCkd8pEpOSv+TM+/vdKUOtd9v3bMeSmuxEpXx0sxp6t+fhSvZUV7EAsxCzoxrr1ugyDR96Jzrk90Vrzp4/BiWPVoNZLbJuCe59ahtYq27cDm/6xCIXbP0KsxWUOXbjj4+Bbj0uuwvdG/RJtk9uhJfSPMMYcOfqxPF5TiTbJqWiJ2qry4LbMnm3vI16iNocOhd4gWfmHX6P80H60xFcHikCRVXm0ZXuH9HO4Qj2X8YxZi2vQWsXhUrz6/EQc2LcL4ep6QT/4E9uAIsPnT0THrt0RrrKC7Vj53G+iurEXqrgHrR2rrsTqF2ao0SG8B0Q4Djpm5IIiI0Nt0+jHNBwVR8qw5sXH1FSlCiYwImjteG0V1r70GOrrjoe13sARo1XZAtRK6jG85Npbw1ql7vgxrP7TDPXcmbMdY0zQmj5A8v4bfw1rHb0r8IofjAO1jn4M8/oODmudjWv/oubOJTCJUUFrW99ZE/wxFg79u1yGj5+k5tNtQeHRj5l+7ML9fTj61IJtG9bCNMYd+nbdAPJXL8D1dz0U1nq9Lh+GzAv6qH2gO1Fdzt15zdH7nFPSOqBLTk+kduiCcG14fT6kdGEaI8/l+GLzuziqdsmd1zk7rPX0E9OSJ4fCo6eGX255DyYybsrRYM+2jSAz7dmWD1MZG3TBp5tAZtob54Mn52Js0KVqZ72UMT/NhJqhnxO9nWIqY4OWrovaKJ96SuGrLj8MkxkbtFZxlK86MU2l4c+J0UFX8WVUxqn6Kv7na5yL0S/B8rfhgRLTJBh+8MrooFNSO4DMktzuPJjM7KDTwg9av2bNK6/6TknviC7deqJjZvinbMZLcprZg4yxQSelpiO5fegPXtGuzVi//I/B86u9pl16J3z3tp8jr+8gmC4lrSOSU8+L+oufW8p3Xf+0mTBQn8HXIefiy5tdTr8M661l85C/ZkHwFFQvOnGsBrs+fjv4k6Vr975ok5QCUwkhgieP6c/VRMbu5eg+4KqQlis/XIbdm9+FDQo+/8D4vQhajwFDYCojg9YXPMnq0S+kZfVFUmDLEUX1dXzy1qswXWaPAeo5MvOVQkYGPfTme0JetuSLbbBJyZefBY+Smky/TOvKm+6CiYwLOiOvd0hzZ63iSKl117DTlxE4vH8PTJfXZxAyuveBaYwKWm8MjZgwOeTlk1LSrXw9od6L4AXDx09EYttkmMSYoIVwcMO9j6F9x4yQ10lQRxLTz4/cZcVMkNQuvN2V8ZSmnquRd083alAxJuhhY36ldlmF/yOs75AbYJN+V3nr68nueSmuHf0LmCLuQSe0ScItDzzZ4msU97/mJpyf3QM2SOuUiYHDR8Fr+gy+Hjff/0TwuYy3uAadfn4WRk+ah+yLLkFLOY4veH08PWXxMv35DxvzIHz+BHhRNzVSj570vJoydkU8xeXqo0kp7XGZGon6Db0hYpfyqq87gQ2r5gd349VUHDbq4idnozeo9KHkjNzeuPrW+4wY4VpLX3xm24Y1wUscH4vD1ZRiGnTuxVege//B6DlwGK9JZ7m6E7XY+eHb2Lt1Iwq2f4BYiVrQWRcOUIdIh6KtGo31W5e8XkhI9P4IROHT56oc2LcTtdXlOF5did1b3kPJ7i2IhqidbZepDl33u/omEOmpld4b0qC2usJ7QRPFA4MmqzBosgqDJqswaLIKgyarMGiyCoMmqzBosgqDJqswaLIKgyarMGiyCoMmqzBosgqDJqswaLIKgyarMGiyCoMmqzBosgqDJqswaLIKgyarMGiyCoMmq0Qt6MojZSjevRVEZ9JtREtcLqdLFC2ccpBVGDRZxZES0ZvQEMWQbtlR70pBZAVZ6kCAQZMVhMBeB5JBkyVUy36VNYMmK0jVMkdosoer59CQe0FkA7U96Ij6YxvV/g4eLSRvUw3X43i+M3XFQT3l2AQib9v0yJIDZV//gmzxGog87WTDzsk/6hk0eVpDw8GgJy8p2a4m0TtA5EG6Xd2wvu00up+jNHnVqXb/H7QIMGjypkbtngp62qLijWrwXgUiT5GrTrZ7UuMphwodj6r9eQEQeYFq1ZXikcZ3nRb0lGWF29QEeyGIvGH+Q0v2fdr4DufMJVxZN1NFfQxEBtON1tfXzTjz/m8E/fDS0r1Cui+AyGzPT19RevDMO52mlhT+uqekRDmIzFSBqponm/pAk0FPeaXsAIR7D4gMIyFdCfcn014/VNnUx31nW3Hd1orPR/RPEwK4FkSGEFJMn7ak8KWzfdx3rpXXbS1fP6Jf+1whxGUgijMp5QIV85RzLeOgGbX7C+9T43w+iOJJNRhssRnNBj1zPerrEwI3q2+PXSCKB9WeblC32NyiAiF6+o7sC32u86G62R5EsSLloYBPDnl4YdHuUBZvdoRuoP9BWVWTrW6uA1FsrJHVtReEGrMW8gjdYPko+PYk5DypVpwGoqiRc6csLpwqggcFQxd20A3mjM0e7wpngdqvlwiiSJGy1oW4+6El+5ajBVoctDZnXNYQF85KtVsvE0StpIbi/Y50R05ZUrQFLRTyHLopU5YU57tC9FMHb57R31kgagnVjop5lgv0bU3MWqtG6MZmje2WqaYfv1Wf2E/ViM3rTlOz9KU0VCsvq4PZj09bWliCCIhY0A2eHZPVM+A4cyHEzSBqir6wkRArfYHAo5OWFe9EBEU86Aazx3QdKB3/7ermLeq7sC/oW091/KmAXA0hl01dXPwJoiBqQTc2d3zX3Hrpv01N2G9Rf71afXf6QN8GdWoK+h8V2WoHda9NXry/AFEWk6Abe+E+JBypyc516mWugJOr4s6V0LeRp34O5arv42zOwb0heDk5iCI16upQC6SAei8LHDgFEm5BWruivT97EXWIof8BAAD//w2ERPIAAAAGSURBVAMA3nYqR6dGqT0AAAAASUVORK5CYII="><meta name="theme-color" content="#8a5a1e"><meta name="apple-mobile-web-app-title" content="Lotería">';
+const ICONOS_JS = '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTMiIGZpbGw9IiM4YTVhMWUiLz4KICA8cGF0aCBkPSJNOCAxOGg0OHYxMGE2IDYgMCAwIDAgMCAxMnYxMEg4VjQwYTYgNiAwIDAgMCAwLTEyVjE4eiIgZmlsbD0iI2Y0ZThkMiIvPgogIDxyZWN0IHg9IjE3IiB5PSIyNyIgd2lkdGg9IjMwIiBoZWlnaHQ9IjQuNSIgcng9IjIuMjUiIGZpbGw9IiM4YTVhMWUiLz4KICA8cmVjdCB4PSIxNyIgeT0iMzUiIHdpZHRoPSIxOSIgaGVpZ2h0PSI0LjUiIHJ4PSIyLjI1IiBmaWxsPSIjOGE1YTFlIi8+Cjwvc3ZnPgo="><link rel="apple-touch-icon" href="data:image/png;base64,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"><meta name="theme-color" content="#8a5a1e"><link rel="manifest" href="manifest.json"><meta name="apple-mobile-web-app-title" content="Lotería">';
 
 const SB_URL   = 'https://ezbzllaowdcouwtretdg.supabase.co/rest/v1';
 const SB_CLAVE = 'sb_publishable_JJZfWMU1LL8oXEgkmoZHvw_qv-SEYZh';
@@ -824,6 +825,44 @@ function splitTexto(precio){
   return 'Papá ' + fmtEUR(p) + ' · Abuelo y Malle ' + fmtEUR(p*2);
 }
 
+function renderResultados(){
+  if(modoGuardado !== 'supabase') return '';
+  const faltan = resultadosPendientes();
+  if(!faltan.length) return '';
+
+  const filas = faltan.map(r => {
+    const prem = r.premios || {};
+    const imp = { '12': Number(prem['12'])||0, '34': Number(prem['34'])||0, '97': Number(prem['97'])||0 };
+    const t = repartoPremio(imp);
+    const detalle = NUMEROS.filter(n => imp[n.id] > 0)
+      .map(n => fmtEUR(imp[n.id]) + ' en el ' + n.id).join(' · ') || 'sin premio';
+    return `<div class="pend-row ${r.total > 0 ? 'due' : ''}">
+      <span class="pend-date">${fmtFechaCorta(r.fecha)} ${r.fecha.slice(0,4)}</span>
+      <span class="pend-precio">
+        <span class="pend-split">${escapeHtml(detalle)}</span>
+        ${r.total > 0 ? '<span class="pend-split">→ Papá −' + fmtEUR(t.papa) + ' · A y M −' + fmtEUR(t.abuelo) + '</span>' : ''}
+        ${r.faltaJugada ? '<span class="pend-tag">falta el sorteo (' + fmtEUR(r.precio) + ')</span>' : ''}
+      </span>
+      <span class="pend-actions">
+        <button class="btn-sm" data-apuntar-res="${r.fecha}">Apuntar</button>
+      </span>
+    </div>`;
+  }).join('');
+
+  const conPremio = faltan.filter(r => r.total > 0).length;
+  const suma = round2(faltan.reduce((s,r) => s + r.total, 0));
+
+  return `<div class="panel pend">
+    <div class="pend-head">
+      <h2>Resultados de la Lotería</h2>
+      ${conPremio ? `<span class="badge">${fmtEUR(suma)} sin apuntar</span>` : ''}
+    </div>
+    <p class="hint">Traído de Lotería Nacional: los sorteos pares, que son los que juegas, con lo que ha tocado en el 19012, el 32534 y el 21997. Apuntar lo mete con el reparto ya hecho.</p>
+    <div class="pend-list">${filas}</div>
+    ${faltan.length > 1 ? '<div class="pend-more"><button class="btn-sm" data-apuntar-res="TODO">Apuntar todo</button></div>' : ''}
+  </div>`;
+}
+
 function renderPendientes(){
   const pend = pendientesOrdenadas();
   if(!pend.length) return '';
@@ -1242,6 +1281,7 @@ function renderBody(){
     </header>
     ${renderStats()}
     ${renderDeshacer()}
+    ${renderResultados()}
     ${renderPendientes()}
     ${renderLoteria()}
     ${renderEntrada()}
@@ -1283,6 +1323,8 @@ let modoGuardado = 'desconocido';
 let capPagina = null;
 let versionRemota = null;
 let fallo = '';
+let resultados = [];          // lo que dice la Lotería Nacional, traído del servidor
+let resultadosPedidos = false;
 
 function datosActuales(){
   return { movements: state.movements, pendientes: state.pendientes,
@@ -1342,6 +1384,48 @@ async function sbGuardar(){
   versionRemota = filas[0].version;
   return 'ok';
 }
+/* Resultados oficiales de Lotería Nacional.
+   El servidor consulta a SELAE (sorteos PARES, que son los que juega) y nos
+   devuelve, por sorteo, el precio del décimo y lo que ha tocado en cada uno de
+   los tres números. Aquí solo se leen y se ofrecen para apuntar. */
+async function sbResultados(){
+  if(modoGuardado !== 'supabase') return;
+  try{
+    const r = await fetch(SB_URL + '/rpc/refrescar_recientes', {
+      method: 'POST', headers: sbCabeceras(), body: '{}'
+    });
+    if(!r.ok) return;
+    const filas = await r.json();
+    if(Array.isArray(filas)){
+      resultados = filas;
+      renderApp();
+    }
+  } catch(e){ console.error('resultados:', e); }
+}
+
+/* Qué falta por apuntar de cada sorteo que la Lotería ya ha publicado. */
+function resultadosPendientes(){
+  const porFecha = {};
+  for(const m of state.movements){
+    if(!m.fecha) continue;
+    porFecha[m.fecha] = porFecha[m.fecha] || { jugada:false, ajuste:false };
+    if(m.tipo === 'jugada') porFecha[m.fecha].jugada = true;
+    else porFecha[m.fecha].ajuste = true;
+  }
+  const out = [];
+  for(const r of resultados){
+    const prem = r.premios || {};
+    const total = ['12','34','97'].reduce((s,k) => s + (Number(prem[k]) || 0), 0);
+    const est = porFecha[r.fecha] || { jugada:false, ajuste:false };
+    const faltaJugada = !est.jugada;
+    const faltaPremio = total > 0 && !est.ajuste;
+    // este panel es para premios por cobrar; los sorteos sin premio ya los
+    // cubre «Sorteos por apuntar», y salir en los dos sitios solo despista
+    if(faltaPremio) out.push({ ...r, total, faltaJugada, faltaPremio });
+  }
+  return out.sort((a,b) => a.fecha < b.fecha ? 1 : -1);
+}
+
 async function sbRecargar(){
   const el = document.getElementById('save-status');
   try{
@@ -1382,6 +1466,7 @@ async function persist(msg){
         if(e2){ e2.className = 'status'; e2.textContent = 'Otro aparato guardó antes que tú: he traído lo suyo. Vuelve a apuntar lo tuyo.'; }
         return;
       }
+      guardarLocal();        // el respaldo local sigue al día
       decir((msg ? msg + ' · ' : '') + 'guardado y sincronizado', true);
     } catch(e){
       decir('NO se ha guardado (' + e.message + '). El cambio se ve en pantalla pero no está en el servidor.', false);
@@ -1448,6 +1533,7 @@ function onClick(e){
     if(modoGuardado === 'supabase') sbRecargar(); else location.reload();
     return;
   }
+  if(e.target.closest('[data-resultados]')){ sbResultados(); return; }
   if(e.target.closest('[data-copiar]')){ copiarExport(); return; }
   if(e.target.closest('[data-cerrar-exp]')){
     const c = document.getElementById('export-box'); if(c) c.remove();
@@ -1482,6 +1568,40 @@ function onClick(e){
   }
   const qa = e.target.closest('[data-quickabono]');
   if(qa){ document.getElementById('abono-importe').value = qa.dataset.quickabono; return; }
+
+  const ap = e.target.closest('[data-apuntar-res]');
+  if(ap){
+    const cual = ap.dataset.apuntarRes;
+    const lista = cual === 'TODO' ? resultadosPendientes()
+                                  : resultadosPendientes().filter(r => r.fecha === cual);
+    if(!lista.length) return;
+    guardarDeshacer(lista.length === 1
+      ? 'apuntado el resultado del ' + fmtFecha(lista[0].fecha)
+      : 'apuntados ' + lista.length + ' resultados de la Lotería');
+
+    let nJug = 0, nPrem = 0, cobrado = 0;
+    for(const r of lista){
+      if(r.faltaJugada && r.precio > 0){
+        state.movements.push({ id: nextId(), fecha: r.fecha, tipo:'jugada', nota:'Jugada semanal',
+                               papa: round2(r.precio), abuelo: round2(r.precio * 2) });
+        state.pendientes = state.pendientes.filter(x => x.fecha !== r.fecha);
+        nJug++;
+      }
+      if(r.faltaPremio){
+        const prem = r.premios || {};
+        const imp = { '12': Number(prem['12'])||0, '34': Number(prem['34'])||0, '97': Number(prem['97'])||0 };
+        const t = repartoPremio(imp);
+        state.movements.push({ id: nextId(), fecha: r.fecha, tipo:'ajuste', nota: notaPremio(imp),
+                               papa: round2(-t.papa), abuelo: round2(-t.abuelo) });
+        nPrem++; cobrado = round2(cobrado + r.total);
+      }
+    }
+    const partes = [];
+    if(nJug) partes.push(nJug + ' sorteo' + (nJug===1?'':'s'));
+    if(nPrem) partes.push(nPrem + ' premio' + (nPrem===1?'':'s') + ' (' + fmtEUR(cobrado) + ')');
+    persist('Apuntado: ' + partes.join(' y ') + '.');
+    return;
+  }
 
   const reg = e.target.closest('[data-reg-pend]');
   if(reg){
@@ -1659,7 +1779,8 @@ function mostrarModo(){
     av.className = 'sync';
     av.innerHTML = '<span class="ca-txt"><strong>Sincronizado.</strong> '
       + 'Se guarda en tu servidor: lo que apuntes aquí lo verás en cualquier otro aparato.</span>'
-      + '<button class="btn-sm ghost" data-recargar="1">Traer lo último</button>';
+      + '<button class="btn-sm ghost" data-recargar="1">Traer lo último</button>'
+      + '<button class="btn-sm ghost" data-resultados="1">Consultar la Lotería</button>';
     document.body.insertBefore(av, document.getElementById('app'));
     return;
   }
@@ -1695,7 +1816,9 @@ async function arrancar(){
       if(fila){ aplicarDatos(fila.datos); versionRemota = fila.version; }
       else { versionRemota = await sbCrear(); }   // primera vez: sube lo que ya hay
       modoGuardado = 'supabase';
+      guardarLocal();        // respaldo por si otro día el servidor no responde
       renderApp(); mostrarModo();
+      if(!resultadosPedidos){ resultadosPedidos = true; sbResultados(); }
       return;
     } catch(e){
       fallo = e.message;
@@ -1733,3 +1856,5 @@ arrancar();
 </script>
 </body>
 </html>
+
+</body></html>
