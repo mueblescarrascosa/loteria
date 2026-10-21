@@ -205,6 +205,11 @@ form.entry-form{display:flex;flex-direction:column;gap:.7rem;max-width:520px;}
 #modo-aviso.malo{background:var(--warn);color:#fff;}
 #modo-aviso.sync{background:var(--good-soft);color:var(--good);border-bottom:1px solid var(--good);}
 #modo-aviso .btn-sm{align-self:center;flex-shrink:0;}
+#modo-aviso .barra-estado{
+  flex-basis:100%;font-size:.82rem;line-height:1.35;padding-top:.3rem;opacity:.9;
+}
+#modo-aviso .barra-estado.mal{font-weight:600;}
+#modo-aviso .btn-sm[disabled]{opacity:.55;cursor:default;}
 #modo-aviso.local{background:var(--accent-soft);color:var(--accent-ink);border-bottom:1px solid var(--accent);}
 
 /* ---- deshacer ---- */
@@ -1496,19 +1501,72 @@ async function sbGuardar(){
    El servidor consulta a SELAE (sorteos PARES, que son los que juega) y nos
    devuelve, por sorteo, el precio del décimo y lo que ha tocado en cada uno de
    los tres números. Aquí solo se leen y se ofrecen para apuntar. */
-async function sbResultados(){
-  if(modoGuardado !== 'supabase') return;
+/* Un recado corto en la barra de arriba. Sin esto, pulsar «Consultar la
+   Lotería» y que no cambie nada en pantalla —porque no haya premios nuevos—
+   es exactamente igual que si el botón estuviera roto. Y lo parecía. */
+function avisoBarra(txt, cls){
+  const barra = document.getElementById('modo-aviso');
+  if(!barra) return;
+  let el = barra.querySelector('.barra-estado');
+  if(!el){
+    el = document.createElement('span');
+    el.className = 'barra-estado';
+    barra.appendChild(el);
+  }
+  el.className = 'barra-estado ' + (cls || '');
+  el.textContent = txt;
+}
+
+/* manual = lo ha pulsado él. Al abrir la app se consulta sola y en silencio;
+   si lo pide a mano hay que contarle siempre cómo ha ido, incluso (sobre todo)
+   cuando la respuesta es «no hay nada nuevo». */
+async function sbResultados(manual){
+  if(modoGuardado !== 'supabase'){
+    if(manual) avisoBarra('Para consultar la Lotería hace falta conexión con tu servidor.', 'mal');
+    return;
+  }
+  const botonEstado = (txt, off) => {
+    const b = document.querySelector('[data-resultados]');
+    if(b){ b.textContent = txt; b.disabled = !!off; }
+  };
+  if(manual){ botonEstado('Consultando…', true); avisoBarra('Preguntando a la Lotería Nacional…'); }
+
   try{
     const r = await fetch(SB_URL + '/rpc/refrescar_recientes', {
       method: 'POST', headers: sbCabeceras(), body: '{}'
     });
-    if(!r.ok) return;
-    const filas = await r.json();
-    if(Array.isArray(filas)){
-      resultados = filas;
-      renderApp();
+    if(!r.ok){
+      if(manual) avisoBarra('La Lotería no ha contestado (error ' + r.status + '). Prueba en un rato.', 'mal');
+      return;
     }
-  } catch(e){ console.error('resultados:', e); }
+    const filas = await r.json();
+    if(!Array.isArray(filas)){
+      if(manual) avisoBarra('El servidor ha contestado algo que no entiendo. Prueba en un rato.', 'mal');
+      return;
+    }
+
+    resultados = filas;
+    renderApp();
+    if(!manual) return;
+
+    const pend = resultadosPendientes();
+    if(pend.length){
+      const total = pend.reduce((sum, p) => sum + p.total, 0);
+      avisoBarra('Hay ' + pend.length + ' sorteo' + (pend.length === 1 ? '' : 's')
+                 + ' con premio sin apuntar, ' + fmtEUR(total)
+                 + (pend.length === 1 ? '. Lo tienes' : '. Los tienes')
+                 + ' abajo, en «Resultados de la Lotería».', 'ok');
+    } else {
+      const ultimo = filas.map(f => f.fecha).sort().pop();
+      avisoBarra('Consultado' + (ultimo ? ', con los resultados hasta el ' + fmtFechaCorta(ultimo) : '')
+                 + ': no hay ningún premio sin apuntar.', 'ok');
+    }
+  } catch(e){
+    console.error('resultados:', e);
+    if(manual) avisoBarra('No he podido hablar con la Lotería (' + e.message + ').', 'mal');
+  } finally {
+    if(manual) botonEstado('Consultar la Lotería', false);
+  }
 }
 
 /* Los sorteos que vienen, tal y como los publica SELAE. Antes esto se calculaba
@@ -1663,7 +1721,7 @@ function onClick(e){
     if(modoGuardado === 'supabase') sbRecargar(); else location.reload();
     return;
   }
-  if(e.target.closest('[data-resultados]')){ sbResultados(); return; }
+  if(e.target.closest('[data-resultados]')){ sbResultados(true); return; }
   if(e.target.closest('[data-copiar]')){ copiarExport(); return; }
   if(e.target.closest('[data-cerrar-exp]')){
     const c = document.getElementById('export-box'); if(c) c.remove();
