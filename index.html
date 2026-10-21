@@ -1545,16 +1545,6 @@ async function sbCargar(){
   const filas = await r.json();
   return filas.length ? filas[0] : null;
 }
-async function sbCrear(){
-  const r = await sbFetch(SB_URL + '/' + SB_TABLA, {
-    method: 'POST',
-    headers: sbCabeceras({ 'Prefer': 'return=representation' }),
-    body: JSON.stringify([{ id: SB_FILA, datos: datosSync(), version: 1 }])
-  });
-  if(!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0,120));
-  const filas = await r.json();
-  return filas.length ? filas[0].version : 1;
-}
 /* Guarda solo si nadie ha escrito desde que cargamos: si otro aparato se
    adelantó, la condición de versión no casa y PostgREST no toca nada. */
 async function sbGuardar(){
@@ -2162,8 +2152,18 @@ async function conectar(){
     if(!ses){ pedirEntrada(''); return; }
     try{
       const fila = await sbCargar();
-      if(fila){ aplicarDatos(fila.datos); versionRemota = fila.version; }
-      else { versionRemota = await sbCrear(); }   // primera vez: sube lo que ya hay
+      /* Si el servidor no devuelve las cuentas, o vienen en un formato que no
+         entiendo, no se sigue: en memoria no hay nada (el archivo ya no lleva
+         datos) y el primer guardado las machacaría con eso, igual que el
+         respaldo del aparato. Las cuentas solo se crean a mano en el servidor. */
+      if(!fila || !aplicarDatos(fila.datos)){
+        ses = null; sesGuardar();
+        pedirEntrada(fila
+          ? 'Las cuentas del servidor tienen un formato que no entiendo. No he tocado nada.'
+          : 'Con esta cuenta el servidor no devuelve las cuentas de la lotería. No he tocado nada.');
+        return;
+      }
+      versionRemota = fila.version;
       modoGuardado = 'supabase';
       guardarLocal();        // respaldo por si otro día el servidor no responde
       renderApp(); mostrarModo();
