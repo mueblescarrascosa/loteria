@@ -23,10 +23,11 @@ self.addEventListener('install', e => {
   );
 });
 
+// Al actualizarse solo borra sus cachés (loteria-*): en la misma web hay otras apps con las suyas
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k.startsWith('loteria-') && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
