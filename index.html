@@ -133,7 +133,8 @@ header.top p{color:var(--ink-soft);max-width:62ch;margin:.6rem 0 0;font-size:.98
 .linkish{background:none;border:none;color:var(--accent-ink);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;}
 
 /* ---- tabs ---- */
-.tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.tabs{display:flex;gap:.35rem;flex-wrap:nowrap;margin-bottom:1.1rem;}
+.tabs .tab{flex:1;padding:.45rem .3rem;white-space:nowrap;text-align:center;}
 .tab{
   font:inherit;font-size:.85rem;font-weight:600;
   border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);
@@ -192,6 +193,16 @@ form.entry-form{display:flex;flex-direction:column;gap:.7rem;max-width:520px;}
 .preview .pv-line + .pv-line{margin-top:.25rem;}
 .preview .pv-val{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600;}
 .preview .pv-none{color:var(--ink-soft);font-style:italic;}
+
+/* ---- Ir a…: cada apartado a un toque, desde cualquier punto de la página ---- */
+details.ir{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));z-index:60;}
+details.ir>summary{list-style:none;cursor:pointer;background:var(--accent);color:#fff;font-weight:600;font-size:.9rem;padding:.65rem 1rem;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.35);}
+details.ir>summary::-webkit-details-marker{display:none;}
+details.ir nav{position:absolute;right:0;bottom:calc(100% + .5rem);display:grid;min-width:13rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.35rem;box-shadow:0 10px 30px rgba(0,0,0,.4);}
+details.ir nav a{color:var(--ink);text-decoration:none;padding:.6rem .8rem;border-radius:10px;font-size:.92rem;}
+details.ir nav a:hover{background:var(--surface-2);}
+.panel[id]{scroll-margin-top:4.5rem;}
+.wrap{padding-bottom:4.5rem;}
 
 /* ---- barra de dónde se guarda ---- */
 #modo-aviso{
@@ -1013,7 +1024,7 @@ function renderPendientes(){
 }
 
 function renderTabs(){
-  const tabs = [['sorteo','Sorteo'],['premio','Premio'],['abono','Abono o pago'],['otro','Otro ajuste']];
+  const tabs = [['sorteo','Sorteo'],['premio','Premio'],['abono','Pago'],['otro','Ajuste']];
   return '<div class="tabs">' + tabs.map(([v,l]) =>
     `<button class="tab ${ui.tab===v?'active':''}" data-tab="${v}">${l}</button>`).join('') + '</div>';
 }
@@ -1402,9 +1413,30 @@ function renderHistorial(){
   </div>`;
 }
 
+// Pone un id a cada apartado (si se pinta) para el menú «Ir a…»
+const conId = (id, html) => html ? html.replace('<div class="panel', '<div id="' + id + '" class="panel') : '';
+function renderIr(apartados){
+  const hay = apartados.filter(([, , html]) => html);
+  return '<details class="ir"><summary>☰ Ir a…</summary><nav>'
+    + '<a href="#arriba" onclick="this.parentNode.parentNode.open=false">↑ Arriba: lo que se debe</a>'
+    + hay.map(([id, txt]) => '<a href="#' + id + '" onclick="this.parentNode.parentNode.open=false">' + txt + '</a>').join('')
+    + '</nav></details>';
+}
 function renderBody(){
+  const A = [
+    ['s-resultados', 'Resultados de la Lotería', renderResultados()],
+    ['s-pendientes', 'Sorteos por apuntar', renderPendientes()],
+    ['s-loteria', 'Cuenta con la lotería', renderLoteria()],
+    ['s-apuntar', 'Apuntar', renderEntrada()],
+    ['s-jugado', 'Jugado y recuperado', renderJugadoRecuperado()],
+    ['s-anual', 'Resumen por año', renderResumenAnual()],
+    ['s-historial', 'Historial', renderHistorial()],
+    ['s-descargar', 'Descargar y copias', renderDescargas()],
+  ].map(([id, txt, html]) => [id, txt, conId(id, html)]);
+  const H = Object.fromEntries(A.map(([id, , html]) => [id, html]));
   return `
-  <div class="wrap">
+  ${renderIr(A)}
+  <div class="wrap" id="arriba">
     <header class="top">
       <p class="eyebrow">Cuentas de la lotería</p>
       <h1>Lotería del Abuelo</h1>
@@ -1412,14 +1444,14 @@ function renderBody(){
     </header>
     ${renderStats()}
     ${renderDeshacer()}
-    ${renderResultados()}
-    ${renderPendientes()}
-    ${renderLoteria()}
-    ${renderEntrada()}
-    ${renderJugadoRecuperado()}
-    ${renderResumenAnual()}
-    ${renderHistorial()}
-    ${renderDescargas()}
+    ${H['s-resultados']}
+    ${H['s-pendientes']}
+    ${H['s-loteria']}
+    ${H['s-apuntar']}
+    ${H['s-jugado']}
+    ${H['s-anual']}
+    ${H['s-historial']}
+    ${H['s-descargar']}
     <footer class="note">Los datos se guardan en esta misma página y se abre igual desde el móvil o el ordenador.</footer>
   </div>`;
 }
