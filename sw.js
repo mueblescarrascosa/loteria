@@ -11,7 +11,7 @@
    Las llamadas a Supabase ni se tocan: son de otro dominio y tienen que ir
    siempre a la red, porque son las cuentas de verdad. */
 
-const CACHE = 'loteria-v2';
+const CACHE = 'loteria-v3';
 const ESTATICOS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

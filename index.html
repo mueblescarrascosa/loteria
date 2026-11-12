@@ -347,6 +347,53 @@ table.hist tbody td{padding:.55rem .7rem;border-top:1px solid var(--border);vert
 table.hist tbody tr:hover{background:var(--surface-2);}
 td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
 .neg{color:var(--good);}
+/* ayuda plegada */
+details.ayuda{margin:.2rem 0 .9rem;font-size:.82rem;}
+details.ayuda summary{cursor:pointer;color:var(--accent-ink);font-weight:500;list-style:none;}
+details.ayuda summary::-webkit-details-marker{display:none;}
+details.ayuda .hint{margin:.4rem 0 0;}
+details.aviso summary{cursor:pointer;font-weight:600;}
+details.aviso[open] summary{margin-bottom:.4rem;}
+/* móvil: pendientes en dos líneas e historial como fichas */
+@media (max-width:600px){
+  .pend-row{display:grid;grid-template-columns:1fr auto;gap:.35rem .5rem;padding:.5rem .65rem;}
+  .pend-date{min-width:0;}
+  .pend-actions{grid-column:2;grid-row:1;margin-left:0;}
+  .pend-precio{grid-column:1/-1;min-width:0;gap:.4rem;font-size:.78rem;}
+  .tablewrap{border:none;overflow:visible;}
+  table.hist{min-width:0;font-size:.85rem;}
+  table.hist thead{display:none;}
+  table.hist tbody tr{display:grid;grid-template-columns:auto auto 1fr;gap:.15rem .8rem;align-items:center;
+    padding:.5rem .2rem;border-top:1px solid var(--border);}
+  table.hist tbody td{padding:0;border:none;}
+  table.hist tbody td:nth-child(1){grid-column:1;white-space:nowrap;font-size:.75rem;color:var(--ink-soft);}
+  table.hist tbody td:nth-child(2){grid-column:2/-1;}
+  table.hist tbody td:nth-child(3){grid-column:1;grid-row:2;text-align:left;}
+  table.hist tbody td:nth-child(4){grid-column:2;grid-row:2;text-align:left;}
+  table.hist tbody td:nth-child(5){grid-column:3;grid-row:2;justify-self:end;}
+  table.hist tbody td:nth-child(3)::before{content:'Papá ';color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-size:.72rem;}
+  table.hist tbody td:nth-child(4)::before{content:'A y M ';color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-size:.72rem;}
+  table.hist tbody td.empty{grid-column:1/-1;}
+  .pend-precio input{width:3.6rem;}
+  /* meses como fichas: mes y a pagar arriba; sorteos, coste y premios debajo; botones al final */
+  .meses table{min-width:0;}
+  .meses thead{display:none;}
+  .meses table,.meses tbody{display:block;width:100%;}
+  .meses tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:.15rem .6rem;
+    padding:.5rem .6rem;border-top:1px solid var(--border);}
+  .meses td{padding:0;border:none;}
+  .meses td:nth-child(1){flex:0 0 calc(100% - 7.2rem);order:0;}
+  .meses td:nth-child(5){flex:0 0 6.5rem;order:1;text-align:right;}
+  .meses td:nth-child(2),.meses td:nth-child(3),.meses td:nth-child(4){order:2;font-size:.74rem;text-align:left;opacity:.85;white-space:nowrap;}
+  .meses td:nth-child(2)::after{content:' sort.';}
+  .meses td:nth-child(3)::before{content:'coste ';}
+  .meses td:nth-child(4)::before{content:'prem. ';}
+  .meses td:nth-child(6){order:3;flex:1 1 100%;text-align:right;margin-top:.25rem;}
+  /* desglose y años sin salirse */
+  .desglose table,.years table{min-width:0;font-size:.78rem;}
+  .desglose td,.desglose th,.years td,.years th{padding:.38rem .3rem;}
+  .desglose th:nth-child(4),.desglose td:nth-child(4){display:none;}
+}
 .pos{color:var(--ink);}
 .flag{color:var(--warn);font-weight:700;margin-right:.3rem;}
 .ded{
@@ -360,8 +407,8 @@ td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;t
 .ded.c-otro{border-style:dotted;}
 .rowactions{display:flex;gap:.4rem;white-space:nowrap;}
 .iconbtn{
-  border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:.8rem;
-  padding:.15rem .3rem;border-radius:6px;
+  border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:1rem;
+  padding:.3rem .5rem;border-radius:6px;
 }
 .iconbtn:hover{background:var(--surface-2);color:var(--ink);}
 .empty{color:var(--ink-soft);font-style:italic;padding:1rem;text-align:center;}
@@ -847,7 +894,7 @@ function renderLoteria(){
 
   return `<div class="panel lot">
     <h2>Cuenta con la lotería</h2>
-    <p class="hint">Tu cuenta con la administradora. Ella cobra los tres números y ya descuenta los premios, así que aquí solo entra eso: coste de los sorteos menos lo que tocó. Los abonos entre vosotros son cuenta aparte y no cuentan aquí. El saldo baja solo con cada sorteo que apuntas; cuando pases por la administración y cuadres con ella, pulsa <strong>cuadrar</strong> y pon la cifra que te diga.</p>
+    ${ayuda(`Tu cuenta con la administradora. Ella cobra los tres números y ya descuenta los premios, así que aquí solo entra eso: coste de los sorteos menos lo que tocó. Los abonos entre vosotros son cuenta aparte y no cuentan aquí. El saldo baja solo con cada sorteo que apuntas; cuando pases por la administración y cuadres con ella, pulsa <strong>cuadrar</strong> y pon la cifra que te diga.`)}
     <div class="lot-grid">
       ${(() => {
         const sl = saldoLoteria();
@@ -934,14 +981,17 @@ function renderJugadoRecuperado(){
         ${b.cats.sin.n ? fila('Sin poder deducir', '', b.cats.sin, 'dudosa') : ''}
       </tbody>
     </table></div>
-    <div class="aviso">${b.nSinConcepto} apuntes antiguos solo dicen «Ajuste». En vez de dejarlos fuera se deducen por sus cifras: lo que toca en el ${num('12')} y el ${num('34')} se parte a medias y lo del ${num('97')} va entero, así que de las dos cantidades se despeja cuánto tocó en cada número, y eso tiene que ser múltiplo de lo jugado esa semana. Un abono rara vez cuadra así. Contrastado con los apuntes que sí llevan concepto, el método acierta el 95%.</div>
+    ${b.nSinConcepto ? `<details class="aviso"><summary>⚠ ${b.nSinConcepto} apuntes antiguos deducidos (acierto 95%)</summary>${b.nSinConcepto} apuntes antiguos solo dicen «Ajuste». En vez de dejarlos fuera se deducen por sus cifras: lo que toca en el ${num('12')} y el ${num('34')} se parte a medias y lo del ${num('97')} va entero, así que de las dos cantidades se despeja cuánto tocó en cada número, y eso tiene que ser múltiplo de lo jugado esa semana. Un abono rara vez cuadra así. Contrastado con los apuntes que sí llevan concepto, el método acierta el 95%.</details>` : ''}
   </div>`;
 }
+
+// Explicación plegada: se lee solo si hace falta
+function ayuda(html){ return '<details class="ayuda"><summary>ⓘ Cómo funciona</summary><p class="hint">' + html + '</p></details>'; }
 
 function splitTexto(precio){
   const p = parseFloat(precio);
   if(!isFinite(p) || p <= 0) return 'pon el precio';
-  return 'Papá ' + fmtEUR(p) + ' · Abuelo y Malle ' + fmtEUR(p*2);
+  return 'Papá ' + fmtEUR(p) + ' · A y M ' + fmtEUR(p*2);
 }
 
 function renderResultados(){
@@ -1002,7 +1052,7 @@ function renderPendientes(){
       </span>
       <span class="pend-actions">
         <button class="btn-sm" data-reg-pend="${p.fecha}">Registrar</button>
-        <button class="btn-sm ghost" data-skip-pend="${p.fecha}" title="Quitar de la lista sin apuntarlo">Saltar</button>
+        <button class="btn-sm ghost" data-skip-pend="${p.fecha}" title="Saltar: quitar de la lista sin apuntarlo" aria-label="Saltar">✕</button>
       </span>
     </div>`;
   }).join('');
@@ -1013,9 +1063,9 @@ function renderPendientes(){
       <h2>Sorteos por apuntar</h2>
       ${vencidas.length ? `<span class="badge">${vencidas.length} ya jugado${vencidas.length===1?'':'s'}</span>` : ''}
     </div>
-    <p class="hint">${calendario.length
+    ${ayuda(calendario.length
       ? 'Los sorteos que vienen, según el calendario oficial de la Lotería Nacional (todos menos el ordinario de los jueves), hasta ' + MESES_VISTA + ' meses vista. El precio del décimo viene puesto; si no cuadra con lo que te cobró, cámbialo en la fila antes de Registrar.'
-      : 'Los sábados que vienen y los especiales de siempre, hasta ' + MESES_VISTA + ' meses vista. <strong>Sin conexión con el servidor las fechas son una estimación</strong>: compruébalas. Cambia el precio en la fila si hace falta y pulsa Registrar.'}</p>
+      : 'Los sábados que vienen y los especiales de siempre, hasta ' + MESES_VISTA + ' meses vista. <strong>Sin conexión con el servidor las fechas son una estimación</strong>: compruébalas. Cambia el precio en la fila si hace falta y pulsa Registrar.')}
     <div class="pend-list">${rows}</div>
     ${resto > 0 || ui.verTodasPend
       ? `<div class="pend-more"><button class="linkish" data-toggle-pend="1">${ui.verTodasPend ? 'Ver solo las próximas' : 'Ver las ' + pend.length + ' pendientes'}</button></div>`
@@ -1310,7 +1360,7 @@ async function copiarExport(){
 function renderDescargas(){
   return `<div class="panel">
     <h2>Descargar</h2>
-    <p class="hint">La página guarda la página entera con tus datos dentro: se abre en cualquier navegador, también sin internet, aunque en esa copia los cambios ya no se guardan. El CSV se abre en Excel y la copia de seguridad guarda los datos en bruto por si hay que restaurarlos. Si el móvil no deja guardar archivos, te ofrece el contenido para copiar y pegar.</p>
+    ${ayuda('La página guarda la página entera con tus datos dentro: se abre en cualquier navegador, también sin internet, aunque en esa copia los cambios ya no se guardan. El CSV se abre en Excel y la copia de seguridad guarda los datos en bruto por si hay que restaurarlos. Si el móvil no deja guardar archivos, te ofrece el contenido para copiar y pegar.')}
     <div class="dl-row">
       <button class="btn" style="margin-top:0" data-dl="html">Descargar la página</button>
       <button class="btn secondary" style="margin-top:0" data-dl="csv">Para Excel (CSV)</button>
@@ -1331,7 +1381,7 @@ function renderResumenAnual(){
   const tot = totales(state.movements);
   return `<div class="panel">
     <h2>Resumen por año</h2>
-    <p class="hint">Lo que sumó o restó cada año al saldo. Un año en negativo es un año en el que se pagó y tocó más de lo que se jugó.</p>
+    ${ayuda('Lo que sumó o restó cada año al saldo. Un año en negativo es un año en el que se pagó y tocó más de lo que se jugó.')}
     <div class="years"><table>
       <thead><tr><th>Año</th><th>Movs.</th><th>Papá</th><th>Abuelo y Malle</th></tr></thead>
       <tbody>${filas}</tbody>
@@ -1384,7 +1434,8 @@ function renderHistorial(){
     return b.id - a.id;
   });
 
-  const rows = list.map(m => {
+  const LIM = 25;
+  const rows = (ui.verTodoHist ? list : list.slice(0, LIM)).map(m => {
     const flag = m.nota && m.nota.indexOf('Ajuste de cierre') === 0;
     let deduc = '';
     if(m.tipo === 'ajuste'){
@@ -1397,8 +1448,8 @@ function renderHistorial(){
       <td class="num ${m.papa < 0 ? 'neg':'pos'}">${fmtEUR(m.papa)}</td>
       <td class="num ${m.abuelo < 0 ? 'neg':'pos'}">${fmtEUR(m.abuelo)}</td>
       <td class="rowactions">
-        <button class="iconbtn" data-edit="${m.id}">Editar</button>
-        <button class="iconbtn" data-del="${m.id}">Eliminar</button>
+        <button class="iconbtn" data-edit="${m.id}" title="Editar" aria-label="Editar">✎</button>
+        <button class="iconbtn" data-del="${m.id}" title="Eliminar" aria-label="Eliminar">🗑</button>
       </td></tr>`;
   }).join('');
 
@@ -1410,6 +1461,7 @@ function renderHistorial(){
       <thead><tr><th>Fecha</th><th>Concepto</th><th>Papá</th><th>Abuelo y Malle</th><th></th></tr></thead>
       <tbody>${rows || '<tr><td colspan="5" class="empty">Sin movimientos con este filtro</td></tr>'}</tbody>
     </table></div>
+    ${list.length > LIM ? `<div class="pend-more"><button class="linkish" data-toggle-hist="1">${ui.verTodoHist ? 'Ver solo los ' + LIM + ' últimos' : 'Ver los ' + list.length + ' movimientos'}</button></div>` : ''}
   </div>`;
 }
 
@@ -1963,6 +2015,9 @@ function onClick(e){
   }
   const tg = e.target.closest('[data-toggle-pend]');
   if(tg){ ui.verTodasPend = !ui.verTodasPend; renderApp(); return; }
+
+  const th = e.target.closest('[data-toggle-hist]');
+  if(th){ ui.verTodoHist = !ui.verTodoHist; renderApp(); return; }
 
   const tm = e.target.closest('[data-toggle-meses]');
   if(tm){ ui.verTodosMeses = !ui.verTodosMeses; renderApp(); return; }
